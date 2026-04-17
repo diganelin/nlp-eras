@@ -1,4 +1,4 @@
-import { PRONOUN_SWAPS } from "./elizaRules.js";
+import { PRONOUN_SWAPS, PRES, SYNONYMS } from "./elizaRules.js";
 
 // ── DSL pattern compiler ─────────────────────────────────
 
@@ -6,54 +6,98 @@ function escapeRegex(s) {
   return s.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// Compile a DSL pattern string into a RegExp.
-// Returns { regex, kind } where kind is one of:
-//   "fallback" | "group" | "wildcard" | "alt" | "literal"
-export function compilePattern(dsl) {
-  const t = dsl.trim();
+// Compile a DSL pattern string into a RegExp with positional captures.
+// Supported tokens:
+//   *           — wildcard, captures
+//   @key        — synonym group (from SYNONYMS), captures
+//   (a OR b)    — alternation, captures matched word
+//   word OR word — bare alternation (whole pattern, non-capturing)
+//   word        — literal word
+export function compilePattern(dsl, synonyms = SYNONYMS) {
+  const t = (dsl || "").trim();
+  if (!t) throw new Error("Empty pattern");
 
-  if (t === "*") {
-    return { regex: /^(.*)$/i, kind: "fallback" };
-  }
-
-  // (a OR b OR c) — captured alternation
-  const paren = t.match(/^\((.+)\)$/);
-  if (paren) {
-    const alts = paren[1].split(/\s+OR\s+/).map((a) => escapeRegex(a.trim()));
-    if (alts.some((a) => !a)) throw new Error("Empty alternation");
-    return { regex: new RegExp(`\\b(${alts.join("|")})\\b`, "i"), kind: "group" };
-  }
-
-  // ...phrase * — wildcard capture at the end
-  if (t.endsWith(" *")) {
-    const prefix = t.slice(0, -2).trim();
-    if (!prefix) throw new Error("Empty prefix before *");
-    const parts = prefix.split(/\s+/).map(escapeRegex);
+  // Bare alternation (no parens, no wildcards/synonyms)
+  if (/\s+OR\s+/.test(t) && !/[*@()]/.test(t)) {
+    const alts = t.split(/\s+OR\s+/).map((a) => a.trim()).filter(Boolean);
     return {
-      regex: new RegExp(`\\b${parts.join("\\s+")}\\s+(.+)$`, "i"),
-      kind: "wildcard",
+      regex: new RegExp(`\\b(?:${alts.map(escapeRegex).join("|")})\\b`, "i"),
+      captureCount: 0,
     };
   }
 
-  // word OR word — non-capturing alternation
-  if (/\s+OR\s+/.test(t)) {
-    const alts = t.split(/\s+OR\s+/).map((a) => escapeRegex(a.trim()));
-    if (alts.some((a) => !a)) throw new Error("Empty alternation");
-    return { regex: new RegExp(`\\b(?:${alts.join("|")})\\b`, "i"), kind: "alt" };
+  // Tokenize
+  const tokens = [];
+  let i = 0;
+  while (i < t.length) {
+    const ch = t[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (ch === "*") { tokens.push({ type: "wild" }); i++; continue; }
+    if (ch === "@") {
+      let j = i + 1;
+      while (j < t.length && /[A-Za-z]/.test(t[j])) j++;
+      const key = t.slice(i + 1, j);
+      if (!key) throw new Error("Empty @synonym key");
+      tokens.push({ type: "synon", key });
+      i = j;
+      continue;
+    }
+    if (ch === "(") {
+      const close = t.indexOf(")", i);
+      if (close === -1) throw new Error("Unmatched '(' in pattern");
+      const inner = t.slice(i + 1, close);
+      const alts = inner.split(/\s+OR\s+/).map((a) => a.trim()).filter(Boolean);
+      if (!alts.length) throw new Error("Empty alternation");
+      tokens.push({ type: "alt", alts });
+      i = close + 1;
+      continue;
+    }
+    // literal word: take until whitespace or special
+    let j = i;
+    while (j < t.length && !/\s/.test(t[j]) && !"*@(".includes(t[j])) j++;
+    if (j === i) j++;
+    tokens.push({ type: "word", word: t.slice(i, j) });
+    i = j;
   }
 
-  // single literal word/phrase
-  const parts = t.split(/\s+/).map(escapeRegex);
-  return {
-    regex: new RegExp(`\\b${parts.join("\\s+")}\\b`, "i"),
-    kind: "literal",
-  };
+  // Build regex. Last wildcard is greedy; others lazy. Insert \s+ between
+  // adjacent literal/group tokens.
+  let captureCount = 0;
+  const lastWildIdx = (() => {
+    for (let k = tokens.length - 1; k >= 0; k--) if (tokens[k].type === "wild") return k;
+    return -1;
+  })();
+
+  const parts = [];
+  for (let k = 0; k < tokens.length; k++) {
+    const tok = tokens[k];
+    const prev = tokens[k - 1];
+    if (tok.type === "wild") {
+      const greedy = k === lastWildIdx;
+      parts.push(greedy ? "\\s*(.*)" : "\\s*(.*?)\\s*");
+      captureCount++;
+    } else if (tok.type === "synon") {
+      if (prev && prev.type !== "wild") parts.push("\\s+");
+      const list = synonyms[tok.key] || [tok.key];
+      parts.push(`\\b(${list.map(escapeRegex).join("|")})\\b`);
+      captureCount++;
+    } else if (tok.type === "alt") {
+      if (prev && prev.type !== "wild") parts.push("\\s+");
+      parts.push(`\\b(${tok.alts.map(escapeRegex).join("|")})\\b`);
+      captureCount++;
+    } else if (tok.type === "word") {
+      if (prev && prev.type !== "wild") parts.push("\\s+");
+      parts.push(`\\b${escapeRegex(tok.word)}\\b`);
+    }
+  }
+
+  return { regex: new RegExp(parts.join(""), "i"), captureCount };
 }
 
-// ── Pronoun swap (single-pass) ───────────────────────────
+// ── Pronoun swap ─────────────────────────────────────────
 
 export function swapPronouns(text) {
-  return text.replace(/\b\w+\b/g, (word) => {
+  return text.replace(/[\w']+/g, (word) => {
     const lower = word.toLowerCase();
     return Object.prototype.hasOwnProperty.call(PRONOUN_SWAPS, lower)
       ? PRONOUN_SWAPS[lower]
@@ -61,29 +105,208 @@ export function swapPronouns(text) {
   });
 }
 
-// ── Compile rules at load time ───────────────────────────
+// ── Compile rules ────────────────────────────────────────
+// Accepts both shapes:
+//   { id, pattern, responses, rank? }                          (simple)
+//   { id, key?, rank?, decomps: [{pattern, responses, memory?}] } (multi)
 
-export function compileRules(rules) {
-  return rules.map((r) => ({ ...r, ...compilePattern(r.pattern), _nextIdx: 0 }));
+function compileDecomp(d, synonyms) {
+  const { regex, captureCount } = compilePattern(d.pattern, synonyms);
+  return {
+    pattern: d.pattern,
+    responses: d.responses,
+    memory: !!d.memory,
+    regex,
+    captureCount,
+    _lastChoice: -1,
+  };
 }
 
-// ── Match input against rule list, return response + which rule fired ──
-// Uses round-robin per rule so responses cycle instead of repeating.
+export function compileRules(rules, synonyms = SYNONYMS) {
+  const compiled = rules.map((r, originalIdx) => {
+    let decomps;
+    if (r.decomps) {
+      decomps = r.decomps.map((d) => compileDecomp(d, synonyms));
+    } else {
+      const patterns = Array.isArray(r.pattern) ? r.pattern : [r.pattern];
+      decomps = patterns.map((p) => compileDecomp({ pattern: p, responses: r.responses }, synonyms));
+    }
+    return {
+      id: r.id,
+      key: r.key || null,
+      rank: r.rank || 0,
+      decomps,
+      _origIdx: originalIdx,
+    };
+  });
+  // Sort by rank descending, then by original order
+  compiled.sort((a, b) => b.rank - a.rank || a._origIdx - b._origIdx);
+  return compiled;
+}
+
+// ── Stateless single-shot response (used by BuildRule for tests) ─
 
 export function respond(input, compiledRules) {
-  const cleaned = input.trim();
-  for (const rule of compiledRules) {
-    const m = cleaned.match(rule.regex);
-    if (m) {
-      const captured = m[1] ? swapPronouns(m[1].trim().replace(/[.!?]+$/, "")) : "";
-      const idx = (rule._nextIdx || 0) % rule.responses.length;
-      rule._nextIdx = idx + 1;
-      const tpl = rule.responses[idx];
-      const text = tpl.replace(/\{1\}/g, captured);
-      return { text, ruleId: rule.id, captured };
+  const bot = createBot(compiledRules);
+  return bot.transform(input);
+}
+
+// ── Find which rule WOULD fire (no memory, no goto, no return) ──
+// Used by MatchGame to quiz on the teaching subset, regardless of which
+// rich rule the live engine actually picked.
+
+export function findFirstMatch(input, compiledRules) {
+  let text = (input || "").toLowerCase();
+  text = text.replace(/[@#$%^&*()_+=~`{[\]}|:<>\/\\\t]/g, " ");
+  text = text.replace(/\s+-+\s+/g, ".");
+  text = text.replace(PUNCT_RE, ".");
+  text = text.replace(BUT_RE, ".");
+  text = text.replace(/\s{2,}/g, " ").trim();
+  const parts = text.split(".").map((p) => p.trim()).filter(Boolean);
+
+  for (const rawPart of parts) {
+    const part = applyPres(rawPart);
+    for (const rule of compiledRules) {
+      if (rule.key) {
+        if (!new RegExp(`\\b${escapeRegex(rule.key)}\\b`, "i").test(part)) continue;
+      }
+      for (const decomp of rule.decomps) {
+        if (decomp.regex.test(part)) return rule.id;
+      }
     }
   }
-  return { text: "Please tell me more.", ruleId: "fallback", captured: "" };
+  return null;
+}
+
+// ── Stateful bot (used by Chat) ──────────────────────────
+
+const MEM_SIZE = 20;
+const PUNCT_RE = /\s*[,\.\?!;]+\s*/g;
+const BUT_RE = /\s+\bbut\b\s+/g;
+
+function applyPres(s) {
+  let out = s;
+  for (const [from, to] of PRES) {
+    out = out.replace(new RegExp(`\\b${escapeRegex(from)}\\b`, "g"), to);
+  }
+  return out;
+}
+
+function postClean(s) {
+  return s
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([.!?,;])/g, "$1")
+    .trim();
+}
+
+function capitalize(s) {
+  if (!s) return s;
+  return s[0].toUpperCase() + s.slice(1);
+}
+
+export function createBot(compiledRules) {
+  const state = { mem: [] };
+  const ruleById = new Map(compiledRules.map((r) => [r.id, r]));
+  const ruleByKey = new Map();
+  for (const r of compiledRules) {
+    if (r.key && !ruleByKey.has(r.key)) ruleByKey.set(r.key, r);
+  }
+
+  function execRule(rule, sentence, gotoDepth = 0) {
+    if (gotoDepth > 8) return null;
+    for (const decomp of rule.decomps) {
+      const m = sentence.match(decomp.regex);
+      if (!m) continue;
+      // Round-robin choose response
+      decomp._lastChoice = (decomp._lastChoice + 1) % decomp.responses.length;
+      let rpl = decomp.responses[decomp._lastChoice];
+
+      // goto chaining
+      const gotoMatch = rpl.match(/^goto\s+(\S+)$/i);
+      if (gotoMatch) {
+        const target = ruleById.get(gotoMatch[1]) || ruleByKey.get(gotoMatch[1]);
+        if (target) {
+          const sub = execRule(target, sentence, gotoDepth + 1);
+          if (sub) return sub;
+        }
+        continue;
+      }
+
+      // Substitute captures with pronoun-swapped text.
+      // {USERTEXT} is the friendly alias for capture group 1 (the only
+      // capture in simple-DSL teaching rules). {N} is for multi-capture
+      // patterns in the richer extras.
+      const subst = (n) => {
+        const cap = m[n];
+        if (cap == null) return "";
+        return swapPronouns(cap.trim().replace(/[.!?,;]+$/, ""));
+      };
+      rpl = rpl.replace(/\{USERTEXT\}/g, () => subst(1));
+      rpl = rpl.replace(/\{(\d+)\}/g, (_, n) => subst(parseInt(n, 10)));
+
+      const finalText = capitalize(postClean(rpl));
+
+      if (decomp.memory) {
+        // Save for later, keep looking for a real reply.
+        state.mem.push({ text: finalText, ruleId: rule.id });
+        if (state.mem.length > MEM_SIZE) state.mem.shift();
+        continue;
+      }
+      return { text: finalText, ruleId: rule.id, captured: m[1] || "" };
+    }
+    return null;
+  }
+
+  function transform(input) {
+    // Normalize input: lowercase, strip junk, split on punctuation/but
+    let text = (input || "").toLowerCase();
+    text = text.replace(/[@#$%^&*()_+=~`{[\]}|:<>\/\\\t]/g, " ");
+    text = text.replace(/\s+-+\s+/g, ".");
+    text = text.replace(PUNCT_RE, ".");
+    text = text.replace(BUT_RE, ".");
+    text = text.replace(/\s{2,}/g, " ").trim();
+
+    const parts = text.split(".").map((p) => p.trim()).filter(Boolean);
+
+    for (const rawPart of parts) {
+      const part = applyPres(rawPart);
+      for (const rule of compiledRules) {
+        if (rule.key) {
+          if (!new RegExp(`\\b${escapeRegex(rule.key)}\\b`, "i").test(part)) continue;
+        }
+        const result = execRule(rule, part);
+        if (result) return result;
+      }
+    }
+
+    // Nothing matched — try memory
+    if (state.mem.length) {
+      const idx = Math.floor(Math.random() * state.mem.length);
+      const [m] = state.mem.splice(idx, 1);
+      return { text: m.text, ruleId: m.ruleId, captured: "" };
+    }
+
+    // Fall back to xnone
+    const xnone = ruleById.get("xnone") || ruleByKey.get("xnone");
+    if (xnone) {
+      const result = execRule(xnone, "");
+      if (result) return result;
+    }
+    return { text: "Please tell me more.", ruleId: "fallback", captured: "" };
+  }
+
+  function getInitial() {
+    // INITIALS handled in Chat.jsx; bot reset on demand
+  }
+
+  function reset() {
+    state.mem = [];
+    for (const rule of compiledRules) {
+      for (const d of rule.decomps) d._lastChoice = -1;
+    }
+  }
+
+  return { transform, getInitial, reset, get mem() { return state.mem; } };
 }
 
 // ── Parse a student-written rule from Python-ish source ──
@@ -110,15 +333,9 @@ export function parseStudentRule(source) {
   if (!pattern.trim()) return { error: "Couldn't parse rule! Empty pattern." };
 
   try {
-    const compiled = compilePattern(pattern);
+    compilePattern(pattern);
     return {
-      rule: {
-        id: "student",
-        pattern,
-        responses,
-        regex: compiled.regex,
-        kind: compiled.kind,
-      },
+      rule: { id: "student", pattern, responses },
     };
   } catch (e) {
     return { error: "Couldn't parse rule! Check pattern syntax." };
@@ -130,12 +347,43 @@ export function parseStudentRule(source) {
 export function ruleToSource(rule) {
   const lines = [];
   lines.push("{");
-  lines.push(`    "pattern": ${JSON.stringify(rule.pattern)},`);
-  lines.push(`    "responses": [`);
-  for (const r of rule.responses) {
-    lines.push(`        ${JSON.stringify(r)},`);
+  if (rule.decomps && rule.decomps.length > 1) {
+    if (rule.key) lines.push(`    "key": ${JSON.stringify(rule.key)},`);
+    if (rule.rank) lines.push(`    "rank": ${rule.rank},`);
+    lines.push(`    "decomps": [`);
+    for (const d of rule.decomps) {
+      lines.push(`        {`);
+      lines.push(`            "pattern": ${JSON.stringify(d.pattern)},`);
+      if (d.memory) lines.push(`            "memory": True,`);
+      lines.push(`            "responses": [`);
+      for (const r of d.responses) {
+        lines.push(`                ${JSON.stringify(r)},`);
+      }
+      lines.push(`            ],`);
+      lines.push(`        },`);
+    }
+    lines.push(`    ],`);
+  } else {
+    const ds = rule.decomps || [rule];
+    const patterns = ds.length > 1
+      ? ds.map((d) => d.pattern)
+      : (Array.isArray(ds[0].pattern || rule.pattern)
+          ? (ds[0].pattern || rule.pattern)
+          : [ds[0].pattern || rule.pattern]);
+    if (patterns.length > 1) {
+      lines.push(`    "pattern": [`);
+      for (const p of patterns) lines.push(`        ${JSON.stringify(p)},`);
+      lines.push(`    ],`);
+    } else {
+      lines.push(`    "pattern": ${JSON.stringify(patterns[0])},`);
+    }
+    if (rule.rank) lines.push(`    "rank": ${rule.rank},`);
+    lines.push(`    "responses": [`);
+    for (const r of (ds[0].responses || rule.responses)) {
+      lines.push(`        ${JSON.stringify(r)},`);
+    }
+    lines.push(`    ],`);
   }
-  lines.push(`    ],`);
   lines.push("},");
   return lines.join("\n");
 }

@@ -1,16 +1,42 @@
 import { useEffect, useMemo, useState } from "react";
 import { TRAIN_CORPUS, TEST_CORPUS } from "./smsData.js";
-import { train, buildScoreMap, evaluate } from "./classifier.js";
+import { train, buildScoreMap, evaluate, classify } from "./classifier.js";
+import NNDiagram from "../../components/NNDiagram.jsx";
 
 // Counting IS the training. Lead with the table — emphasize text → numbers.
-// Animation is artificially paced so students can read the steps.
+// Animation is artificially paced (~10s) so students can watch one message
+// flow through the classifier.
 
 const PHASES = [
-  { ms: 1000, label: "Reading 500 training messages…" },
-  { ms: 1200, label: "Counting how often each of your words appears in spam vs legit…" },
-  { ms: 800,  label: "Computing scores from the counts…" },
+  { ms: 2200, label: "Reading 500 training messages…" },
+  { ms: 3400, label: "Counting how often each of your words appears in spam vs legit…" },
+  { ms: 2400, label: "Computing scores from the counts…" },
+  { ms: 2000, label: "Running your model on an example message…" },
 ];
 const TOTAL_MS = PHASES.reduce((s, p) => s + p.ms, 0);
+
+// Pick a sample message from the training corpus that contains at least 2 of
+// the student's picked words, preferring spam for contrast.
+function pickSample(words, corpus) {
+  const wordSet = new Set(words.map((w) => w.toLowerCase()));
+  const score = (msg) => {
+    const toks = msg.text.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+    let hits = 0;
+    for (const t of toks) if (wordSet.has(t)) hits++;
+    return hits;
+  };
+  const spamCandidates = corpus.filter((m) => m.label === "spam").sort((a, b) => score(b) - score(a));
+  const best = spamCandidates[0];
+  if (best && score(best) >= 2) return best;
+  // fall back to any message with ≥1 hit
+  const any = corpus.map((m) => ({ m, s: score(m) })).filter((x) => x.s >= 1).sort((a, b) => b.s - a.s);
+  return any[0]?.m ?? corpus[0];
+}
+
+function hitsInMessage(words, msg) {
+  const toks = new Set(msg.text.toLowerCase().split(/[^a-z]+/).filter(Boolean));
+  return words.filter((w) => toks.has(w.toLowerCase())).slice(0, 4);
+}
 
 export default function Train({ picks, onDone }) {
   const [phaseIdx, setPhaseIdx] = useState(0);
@@ -19,6 +45,9 @@ export default function Train({ picks, onDone }) {
   const rows = useMemo(() => train(words, TRAIN_CORPUS), [words.join(",")]);
   const scoreMap = useMemo(() => buildScoreMap(rows), [rows]);
   const acc = useMemo(() => evaluate(scoreMap, TEST_CORPUS), [scoreMap]);
+  const sample = useMemo(() => pickSample(words, TRAIN_CORPUS), [words.join(",")]);
+  const sampleHits = useMemo(() => hitsInMessage(words, sample), [words.join(","), sample.text]);
+  const predicted = useMemo(() => classify(sample.text, scoreMap).verdict, [scoreMap, sample.text]);
 
   useEffect(() => {
     const timers = [];
@@ -38,11 +67,28 @@ export default function Train({ picks, onDone }) {
   const spamCount  = TRAIN_CORPUS.filter((m) => m.label === "spam").length;
   const legitCount = TRAIN_CORPUS.filter((m) => m.label === "ham").length;
 
+  const nnInputs = sampleHits.length
+    ? sampleHits.map((w) => ({ label: w, value: 1 }))
+    : words.slice(0, 4).map((w) => ({ label: w, value: 0.6 }));
+  const nnOutput = {
+    label: predicted === "spam" ? "SPAM" : "LEGIT",
+    tone:  predicted === "spam" ? "spam" : "ham",
+  };
+
   return (
     <div className="ml">
       {!done && (
         <div className="train__running">
-          <div className="train__phases">
+          <div className="train__sample">
+            <div className="train__sample-label">Example message from the training set:</div>
+            <div className="train__sample-text">
+              {highlightTokens(sample.text, sampleHits.map((w) => w.toLowerCase()))}
+            </div>
+          </div>
+
+          <NNDiagram inputs={nnInputs} output={nnOutput} duration={TOTAL_MS} running />
+
+          <div className="train__phases train__phases--inline">
             {PHASES.map((p, i) => (
               <div
                 key={i}
@@ -140,5 +186,16 @@ export default function Train({ picks, onDone }) {
         </>
       )}
     </div>
+  );
+}
+
+// Render a message with certain tokens highlighted.
+function highlightTokens(text, tokens) {
+  const tokenSet = new Set(tokens);
+  const parts = text.split(/(\W+)/);
+  return parts.map((p, i) =>
+    tokenSet.has(p.toLowerCase())
+      ? <mark key={i} className="train__hit">{p}</mark>
+      : <span key={i}>{p}</span>
   );
 }

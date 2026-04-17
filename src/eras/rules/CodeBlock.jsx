@@ -40,12 +40,14 @@ export default function CodeBlock({
   selected = false,
   state = null, // null | "correct" | "wrong"
   readonly = false,
+  draggable = false,
 }) {
   const text = source ?? (rule ? ruleToSource(rule) : "");
   const classes = [
     "code-block",
     onClick && !readonly ? "code-block--clickable" : "",
     readonly ? "code-block--readonly" : "",
+    draggable ? "code-block--draggable" : "",
     selected ? "code-block--selected" : "",
     state === "correct" ? "code-block--correct" : "",
     state === "wrong" ? "code-block--wrong" : "",
@@ -53,9 +55,26 @@ export default function CodeBlock({
     .filter(Boolean)
     .join(" ");
 
+  const onDragStart = draggable
+    ? (e) => {
+        e.dataTransfer.setData("text/plain", text);
+        e.dataTransfer.effectAllowed = "copy";
+      }
+    : undefined;
+
+  const dragStyle = draggable
+    ? { cursor: "grab", userSelect: "none" }
+    : undefined;
+
   return (
-    <pre className={classes} onClick={onClick}>
-      <code>{highlight(text)}</code>
+    <pre
+      className={classes}
+      style={dragStyle}
+      onClick={onClick}
+      draggable={draggable || undefined}
+      onDragStart={onDragStart}
+    >
+      <code style={dragStyle}>{highlight(text)}</code>
     </pre>
   );
 }

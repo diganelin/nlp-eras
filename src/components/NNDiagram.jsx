@@ -78,16 +78,24 @@ export default function NNDiagram({
 
         {inputs.map((inp, i) => (
           <g key={`in-${i}`} className="nn__in">
-            <circle cx={COL_X[0]} cy={inputY[i]} r={12}
-              className="nn__node nn__node--input"
+            <circle cx={COL_X[0]} cy={inputY[i]} r={13}
+              className={`nn__node nn__node--input ${inp.number === 0 ? "nn__node--input-off" : ""}`}
               style={{
-                animationDelay: `${i * 80}ms`,
+                animationDelay: `${i * 60}ms`,
                 opacity: 0.35 + 0.65 * (inp.value ?? 0.7),
               }} />
-            <text x={COL_X[0] - 18} y={inputY[i]}
+            {inp.number != null && (
+              <text x={COL_X[0]} y={inputY[i]}
+                className="nn__input-number"
+                textAnchor="middle" dominantBaseline="central"
+                style={{ animationDelay: `${i * 60}ms` }}>
+                {inp.number}
+              </text>
+            )}
+            <text x={COL_X[0] - 20} y={inputY[i]}
               className="nn__input-label"
               textAnchor="end" dominantBaseline="middle"
-              style={{ animationDelay: `${i * 80}ms` }}>
+              style={{ animationDelay: `${i * 60}ms` }}>
               {inp.label}
             </text>
           </g>

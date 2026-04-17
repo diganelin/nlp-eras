@@ -1,83 +1,333 @@
-// Stage 1 — "You're the model": fill-in-the-blank snippets pulled from real
-// sources (Wikipedia, public-domain fiction, CPython stdlib). Each snippet
-// cuts off at one word; the student guesses; the full continuation is then
-// revealed along with the source.
+// Stage 1 — "You're the model": fill-in-the-blank.
+//
+// Mix of real-world fragments: Wikipedia, web text (Common Crawl sample
+// at huggingface.co/datasets/agentlans/common-crawl-sample), public
+// documentation, casual prose. We lean casual on purpose — classroom
+// text, recipe fragments, how-to instructions, forum messages.
+// Some answers are boring ("the", "and") to make the grammar side of
+// prediction visible; others are satisfying content words.
 
 export const SNIPPETS = [
+  // ── Grammatical / function words (easy wins) ─────────────────
+  {
+    id: "gram-oven",
+    register: "recipe",
+    source: "web text (Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "Preheat the oven to 350 degrees",
+    answer: "Fahrenheit",
+    acceptable: ["F"],
+    continuation: "Fahrenheit. Line a baking sheet with parchment paper.",
+  },
+  {
+    id: "gram-add",
+    register: "recipe",
+    source: "web text (Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "In a large bowl, whisk together the flour, sugar, baking powder,",
+    answer: "and",
+    continuation: "and salt. Set aside.",
+  },
+  {
+    id: "gram-the",
+    register: "how-to",
+    source: "web text (Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "Open the lid. Remove the filter and rinse it under",
+    answer: "the",
+    continuation: "the tap. Replace and close.",
+  },
+  {
+    id: "gram-to",
+    register: "instructions",
+    source: "IKEA-style assembly guide",
+    sourceUrl: null,
+    before: "Insert screw B into hole 3 and tighten with the Allen key provided. Do not",
+    answer: "overtighten",
+    acceptable: ["over-tighten", "force", "force it"],
+    continuation: "overtighten. Repeat on the other side.",
+  },
+
+  {
+    id: "gram-pangram",
+    register: "classic pangram",
+    source: "well-known English pangram (19th c.)",
+    sourceUrl: null,
+    before: "The quick brown fox jumps over",
+    answer: "the",
+    continuation: "the lazy dog.",
+  },
+  {
+    id: "gram-hamlet",
+    register: "Shakespeare",
+    source: "Hamlet, Act III Scene I",
+    sourceUrl: "https://www.gutenberg.org/files/1524/1524-h/1524-h.htm",
+    before: "To be or not to",
+    answer: "be",
+    continuation: "be, that is the question.",
+  },
+  {
+    id: "gram-bananas",
+    register: "encyclopedia",
+    source: "Wikipedia — Banana",
+    sourceUrl: "https://en.wikipedia.org/wiki/Banana",
+    before: "Bananas are among the most widely consumed fruits in",
+    answer: "the",
+    continuation: "the world.",
+  },
+  {
+    id: "gram-stir",
+    register: "recipe",
+    source: "authored for this lesson",
+    sourceUrl: null,
+    before: "Stir in the vanilla extract. Pour the batter into",
+    answer: "the",
+    acceptable: ["a"],
+    continuation: "the prepared pan and smooth the top.",
+  },
+
+  // ── Casual / web / forum ────────────────────────────────────
+  {
+    id: "cc-running",
+    register: "personal blog",
+    source: "web text (Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "Ran along Manly beach again. It took the World Masters Games for the council to finally buy some sand and cover the rocks that were exposed during",
+    answer: "winter",
+    continuation: "winter. They really are a crap council.",
+  },
+  {
+    id: "cc-surf",
+    register: "surf report",
+    source: "web text (Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "The NE wind is better for the northern beach and the SE wind for the southern",
+    answer: "beach",
+    continuation: "beach. This spot can be closed during Army training.",
+  },
+  {
+    id: "cc-grammar",
+    register: "opinion blog",
+    source: "web text (Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "I find it jarring when someone of influence, like a politician or a radio presenter, gets their grammar really",
+    answer: "wrong",
+    acceptable: ["off", "bad"],
+    continuation: "wrong. It's a bit like the wild apostrophe at the greengrocer's.",
+  },
+  {
+    id: "cc-npr",
+    register: "news briefing",
+    source: "NPR morning headlines (via Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "Good morning, here are our early stories. Putin tells Snowden that Russia doesn't do mass",
+    answer: "surveillance",
+    continuation: "surveillance. Here are more headlines: Ukrainian clashes reported as Russia meets officials.",
+  },
+  {
+    id: "cc-nand",
+    register: "tech business",
+    source: "web text (Common Crawl sample)",
+    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
+    before: "With a solid supply agreement from Samsung, Seagate will be in a leading position any time that NAND flash enters a",
+    answer: "shortage",
+    continuation: "shortage. Without such an agreement, Seagate's SSD market share would likely drive NAND suppliers away.",
+  },
+
+  // ── Encyclopedic / world-knowledge ──────────────────────────
   {
     id: "wiki-cat",
-    source: "Wikipedia",
+    register: "encyclopedia",
+    source: "Wikipedia — Cat",
     sourceUrl: "https://en.wikipedia.org/wiki/Cat",
     before: "The cat (Felis catus), also called domestic cat and house cat, is a small carnivorous",
     answer: "mammal",
-    continuation:
-      "mammal. It is an obligate carnivore, requiring a predominantly meat-based diet.",
+    continuation: "mammal. It is an obligate carnivore, requiring a predominantly meat-based diet.",
   },
   {
     id: "wiki-apollo",
+    register: "encyclopedia",
     source: "Wikipedia — Apollo 11",
     sourceUrl: "https://en.wikipedia.org/wiki/Apollo_11",
-    before:
-      "Apollo 11 was the American spaceflight that first landed humans on the",
+    before: "Apollo 11 was the American spaceflight that first landed humans on the",
     answer: "Moon",
-    continuation:
-      "Moon, and the fifth crewed mission of NASA's Apollo program.",
+    continuation: "Moon, and the fifth crewed mission of NASA's Apollo program.",
   },
   {
-    id: "novel-austen",
-    source: "Jane Austen, Pride and Prejudice (1813)",
-    sourceUrl: "https://www.gutenberg.org/files/1342/1342-h/1342-h.htm",
-    before:
-      "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a",
-    answer: "wife",
-    continuation: "wife.",
+    id: "wiki-everest",
+    register: "encyclopedia",
+    source: "Wikipedia — Mount Everest",
+    sourceUrl: "https://en.wikipedia.org/wiki/Mount_Everest",
+    before: "Mount Everest is Earth's highest mountain above",
+    answer: "sea",
+    acceptable: ["sea level"],
+    continuation: "sea level, located in the Mahalangur Himal sub-range of the Himalayas.",
   },
   {
-    id: "novel-sherlock",
-    source: "A. Conan Doyle, \"A Scandal in Bohemia\" (1891)",
-    sourceUrl: "https://www.gutenberg.org/files/1661/1661-h/1661-h.htm",
-    before: "To Sherlock Holmes she is always the",
-    answer: "woman",
-    continuation:
-      "woman. I have seldom heard him mention her under any other name.",
+    id: "wiki-einstein",
+    register: "encyclopedia",
+    source: "Wikipedia — Albert Einstein",
+    sourceUrl: "https://en.wikipedia.org/wiki/Albert_Einstein",
+    before: "Albert Einstein was a German-born theoretical",
+    answer: "physicist",
+    continuation: "physicist, widely held to be one of the greatest and most influential scientists of all time.",
   },
   {
-    id: "novel-huck",
-    source: "Mark Twain, Huckleberry Finn (1884)",
+    id: "wiki-kilimanjaro",
+    register: "encyclopedia",
+    source: "Wikipedia — Mount Kilimanjaro",
+    sourceUrl: "https://en.wikipedia.org/wiki/Mount_Kilimanjaro",
+    before: "Mount Kilimanjaro is the highest mountain in",
+    answer: "Africa",
+    continuation: "Africa and the highest free-standing mountain above sea level in the world.",
+  },
+  {
+    id: "wiki-eiffel",
+    register: "encyclopedia",
+    source: "Wikipedia — Eiffel Tower",
+    sourceUrl: "https://en.wikipedia.org/wiki/Eiffel_Tower",
+    before: "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in",
+    answer: "Paris",
+    continuation: "Paris, France.",
+  },
+  {
+    id: "wiki-pizza",
+    register: "encyclopedia",
+    source: "Wikipedia — Pizza",
+    sourceUrl: "https://en.wikipedia.org/wiki/Pizza",
+    before: "Pizza is a dish of Italian",
+    answer: "origin",
+    continuation: "origin consisting of a usually round, flat base of leavened wheat-based dough.",
+  },
+  {
+    id: "wiki-venus",
+    register: "encyclopedia",
+    source: "Wikipedia — Venus",
+    sourceUrl: "https://en.wikipedia.org/wiki/Venus",
+    before: "Venus is the second planet from the",
+    answer: "Sun",
+    continuation: "Sun. It is the hottest planet in our solar system due to its thick atmosphere of carbon dioxide.",
+  },
+
+  // ── Everyday / casual speech ────────────────────────────────
+  {
+    id: "casual-coffee",
+    register: "casual dialogue",
+    source: "authored for this lesson",
+    sourceUrl: null,
+    before: "Hey, could you grab me a coffee on your way back? Just black, no",
+    answer: "sugar",
+    acceptable: ["cream", "milk"],
+    continuation: "sugar. Thanks, you're a lifesaver.",
+  },
+  {
+    id: "casual-rain",
+    register: "casual dialogue",
+    source: "authored for this lesson",
+    sourceUrl: null,
+    before: "Don't forget your umbrella — the forecast says it's going to",
+    answer: "rain",
+    continuation: "rain all afternoon.",
+  },
+  {
+    id: "casual-weekend",
+    register: "social media post",
+    source: "authored for this lesson",
+    sourceUrl: null,
+    before: "Finally Friday!! Can't wait for the",
+    answer: "weekend",
+    continuation: "weekend. Three day streak at the gym — let's keep it going.",
+  },
+  {
+    id: "casual-latenight",
+    register: "social media post",
+    source: "authored for this lesson",
+    sourceUrl: null,
+    before: "It's 2am and I'm still awake thinking about that conversation we had. Why is my brain like",
+    answer: "this",
+    acceptable: ["that"],
+    continuation: "this.",
+  },
+
+  // ── How-to / instruction style ──────────────────────────────
+  {
+    id: "howto-tie",
+    register: "how-to",
+    source: "wikiHow-style instruction",
+    sourceUrl: null,
+    before: "To tie a bowline, make a small loop in the rope. Pass the end up through the loop, around the standing line, and back down through the",
+    answer: "loop",
+    continuation: "loop. Pull tight.",
+  },
+  {
+    id: "howto-charge",
+    register: "how-to",
+    source: "device manual-style fragment",
+    sourceUrl: null,
+    before: "Plug the adapter into a wall outlet. The indicator light will turn green when the device is fully",
+    answer: "charged",
+    continuation: "charged. Charging time: approximately 90 minutes.",
+  },
+
+  // ── Recipes ────────────────────────────────────────────────
+  {
+    id: "recipe-simmer",
+    register: "recipe",
+    source: "home-cooking blog style",
+    sourceUrl: null,
+    before: "Add the tomatoes and a pinch of salt. Reduce the heat to low and let it",
+    answer: "simmer",
+    continuation: "simmer for about 15 minutes, stirring occasionally.",
+  },
+  {
+    id: "recipe-eggs",
+    register: "recipe",
+    source: "home-cooking blog style",
+    sourceUrl: null,
+    before: "Crack two eggs into a bowl and whisk until smooth. Season with salt and",
+    answer: "pepper",
+    continuation: "pepper.",
+  },
+
+  // ── Code / Python (they know basic Python) ─────────────────
+  {
+    id: "code-print",
+    register: "Python code",
+    source: "introductory textbook fragment",
+    sourceUrl: null,
+    before: "name = input(\"What's your name? \")\nprint(\"Hello,\",",
+    answer: "name",
+    continuation: "name)",
+    mono: true,
+  },
+  {
+    id: "code-range",
+    register: "Python code",
+    source: "introductory textbook fragment",
+    sourceUrl: null,
+    before: "total = 0\nfor i in range(1, 11):\n    total += i\nprint(\"Sum is:\",",
+    answer: "total",
+    continuation: "total)",
+    mono: true,
+  },
+
+  // ── A couple of classics the user specifically liked ────────
+  {
+    id: "quote-twain",
+    register: "classic novel",
+    source: "Mark Twain, The Adventures of Huckleberry Finn (1884)",
     sourceUrl: "https://www.gutenberg.org/files/76/76-h/76-h.htm",
-    before:
-      "You don't know about me without you have read a book by the name of The Adventures of Tom",
+    before: "You don't know about me without you have read a book by the name of The Adventures of Tom",
     answer: "Sawyer",
     continuation: "Sawyer; but that ain't no matter.",
   },
   {
-    id: "wiki-cookie",
-    source: "Wikipedia — Chocolate chip cookie",
-    sourceUrl: "https://en.wikipedia.org/wiki/Chocolate_chip_cookie",
-    before:
-      "A chocolate chip cookie is a drop cookie that contains pieces of chocolate mixed into the dough before",
-    answer: "baking",
-    continuation:
-      "baking. Texture and appearance vary with ingredients and preparation, ranging from moist and chewy to crispy.",
-  },
-  {
-    id: "poem-dickinson",
-    source: "Emily Dickinson, c. 1861",
-    sourceUrl: "https://www.gutenberg.org/ebooks/12242",
-    before: "Hope is the thing with",
-    answer: "feathers",
-    continuation:
-      "feathers /\nThat perches in the soul, /\nAnd sings the tune without the words, /\nAnd never stops at all.",
-  },
-  {
-    id: "code-median",
-    source: "CPython stdlib (statistics.py)",
-    sourceUrl: "https://github.com/python/cpython/blob/main/Lib/statistics.py",
-    before:
-      "def median_low(data):\n    data = sorted(data)\n    n = len(data)\n    if n == 0:\n        raise StatisticsError('no median for empty",
-    answer: "data",
-    continuation:
-      "data')\n    if n % 2 == 1:\n        return data[n // 2]\n    else:\n        return data[n // 2 - 1]",
-    mono: true,
+    id: "song-twinkle",
+    register: "song",
+    source: "Jane Taylor, \"The Star\" (1806)",
+    sourceUrl: "https://en.wikipedia.org/wiki/Twinkle,_Twinkle,_Little_Star",
+    before: "Twinkle, twinkle, little star, how I wonder what you",
+    answer: "are",
+    continuation: "are. Up above the world so high, like a diamond in the sky.",
   },
 ];

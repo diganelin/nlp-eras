@@ -67,9 +67,14 @@ export default function Train({ picks, onDone }) {
   const spamCount  = TRAIN_CORPUS.filter((m) => m.label === "spam").length;
   const legitCount = TRAIN_CORPUS.filter((m) => m.label === "ham").length;
 
-  const nnInputs = sampleHits.length
-    ? sampleHits.map((w) => ({ label: w, value: 1 }))
-    : words.slice(0, 4).map((w) => ({ label: w, value: 0.6 }));
+  const sampleTokens = useMemo(
+    () => new Set(sample.text.toLowerCase().split(/[^a-z]+/).filter(Boolean)),
+    [sample.text]
+  );
+  const nnInputs = words.map((w) => {
+    const present = sampleTokens.has(w.toLowerCase()) ? 1 : 0;
+    return { label: w, number: present, value: present ? 1 : 0.28 };
+  });
   const nnOutput = {
     label: predicted === "spam" ? "SPAM" : "LEGIT",
     tone:  predicted === "spam" ? "spam" : "ham",

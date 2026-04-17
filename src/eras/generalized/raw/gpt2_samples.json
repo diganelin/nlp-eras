@@ -1,0 +1,182 @@
+[
+  {
+    "seed": 7,
+    "key": "recipe",
+    "prompt": "Recipe for chocolate chip cookies:\nIngredients:\n",
+    "continuation": "1/2 cup flour, or to taste\n1/4 cup unsalted butter, cubed\n1/4 cup sugar, or to taste\n2 cups sugar, to taste\n1 teaspoon baking powder\n1/4 teaspoon salt, to taste\n1/4 cup unsweetened cocoa"
+  },
+  {
+    "seed": 7,
+    "key": "history",
+    "prompt": "The Battle of Hastings was fought in 1066 between",
+    "continuation": " the English, Irish, French, and Scots, and in 1071 between the Germanic and Welsh Empires. This was not the first time a battle was fought in Wales and England between two different races. In 1078, a battle in West Wales was fought between the Scots and the English, the"
+  },
+  {
+    "seed": 7,
+    "key": "news",
+    "prompt": "BREAKING: Scientists announced today that",
+    "continuation": " they have identified the first known organism to carry the genetic blueprint for Alzheimer's disease (AD) in mice, known as the \"tumensome.\" This is an area of research known as the \"tumensome\" which we've known for years.\n\nThe researchers from the University"
+  },
+  {
+    "seed": 7,
+    "key": "advice",
+    "prompt": "Dear Abby,\nMy neighbor keeps playing loud music at 3am. What should I",
+    "continuation": " do? She's playing a tune that's playing while I'm asleep, and she'll play it when I'm awake, and sometimes she's just playing until I wake up, but when I wake up she'll just play the melody when I'm asleep.\n\nI think that it's important"
+  },
+  {
+    "seed": 7,
+    "key": "code",
+    "prompt": "def is_prime(n):\n    ",
+    "continuation": "  __brief def __a__(n): return (__a__+1)\n\n# The default value is 0.\n\nreturn n+1\n\ndef n_prime(n): return (n-1)\n\nreturn n-1\n\ndef n_"
+  },
+  {
+    "seed": 7,
+    "key": "fairytale",
+    "prompt": "Once upon a time, there was a little girl who lived",
+    "continuation": " in a house on her own.\n\nShe was a virgin. She was only 16 years old at the time.\n\nShe was one of three who were forced to marry a prostitute, and she had no idea where their relationship ended.\n\nShe had no other option.\n\nThey"
+  },
+  {
+    "seed": 7,
+    "key": "wiki",
+    "prompt": "The giraffe (Giraffa camelopardalis) is a",
+    "continuation": " great example of a great-grandmother's creation that bears the name giraffe. She was first described in 1929 by a Swiss photographer, Gustav Vielenschutz.\n\n\nIt is an African, and is known as the \"Golden Lion\" by many people. In order to understand it"
+  },
+  {
+    "seed": 7,
+    "key": "movie",
+    "prompt": "Top 5 movies of all time:\n1.",
+    "continuation": " The Princess Diaries 2. The Princess Diaries 3. The Princess Diaries 4. The Princess Diaries 5. The Princess Diaries 6. The Princess Diaries 7. The Princess Diaries 8. The Princess Diaries 9. The Princess Diaries 10. The Princess Diaries 11."
+  },
+  {
+    "seed": 7,
+    "key": "howto",
+    "prompt": "How to tie a necktie:\nStep 1:",
+    "continuation": "\nPlace your feet on your neck with your body and gently twist your knees. Now place your hands over your head with your knees slightly raised. Now gently pull your shoulders down to the floor with your hands. The first step should take a few seconds. Repeat as many times as you feel comfortable."
+  },
+  {
+    "seed": 7,
+    "key": "poem",
+    "prompt": "The autumn leaves fall softly,\n",
+    "continuation": "\nThey are a great blue,\n\nWhere a great blue blossoms\n\nLike the red of a fire\n\nThat leaves all the green\n\nAnd the green of a mountain.\n\n\nAnd now we come and sing\n\nThe words that come from the heart of a young maiden"
+  },
+  {
+    "seed": 13,
+    "key": "recipe",
+    "prompt": "Recipe for chocolate chip cookies:\nIngredients:\n",
+    "continuation": "1 cup granulated sugar\n\u00bc cup brown sugar, softened\n1 cup dark brown sugar\n1/2 cup milk\n3/4 cup water\n1 tsp vanilla extract, to taste\nDirections:\nIn a mixing bowl, combine the ingredients:\n3/4 cup granulated"
+  },
+  {
+    "seed": 13,
+    "key": "history",
+    "prompt": "The Battle of Hastings was fought in 1066 between",
+    "continuation": " King Philip of Spain, as a general of the Spanish Army, and the King Philip of France. The battle was the first in what was to become known as the French Revolution and ended in the defeat of France."
+  },
+  {
+    "seed": 13,
+    "key": "news",
+    "prompt": "BREAKING: Scientists announced today that",
+    "continuation": " their study of the genetic makeup of mice in the wild found no evidence of genetic differences between the three strains of mice. This contradicts a statement released last month by the American Academy of Dermatology (AAD) which concluded that \"there is no genetic difference between the two strains of mice.\"\n"
+  },
+  {
+    "seed": 13,
+    "key": "advice",
+    "prompt": "Dear Abby,\nMy neighbor keeps playing loud music at 3am. What should I",
+    "continuation": " do? (I know what you're thinking...you can't get any better than that!) I don't have the energy to make myself laugh anymore.\n\nI know you're trying to figure it out. I know you like to put on a little extra energy so you can get to the"
+  },
+  {
+    "seed": 13,
+    "key": "code",
+    "prompt": "def is_prime(n):\n    ",
+    "continuation": "    \u00a0 \u00a0#ifdef prime(n): \u00a0#define prime_type(n, n) (defn = prime(n)), #define prime_type(n, n)\ndefmodule UML_EQ ( n ): n = UML_"
+  },
+  {
+    "seed": 13,
+    "key": "fairytale",
+    "prompt": "Once upon a time, there was a little girl who lived",
+    "continuation": " in the basement of her father's house, and who always tried to follow the rules in the kitchen or the bathroom. When she came back, it was a boy who loved to steal apples and carrots and potatoes.\n\nBut when she left, she said, there was a sudden sense of despair"
+  },
+  {
+    "seed": 13,
+    "key": "wiki",
+    "prompt": "The giraffe (Giraffa camelopardalis) is a",
+    "continuation": " member of the family of giraffes (Rhabdomastibularis) and the last of the genera, known as the giraffe, which were present in Africa in the third millennium BC. The giraffe (Giraffa camelopardalis) was found in Africa around 8"
+  },
+  {
+    "seed": 13,
+    "key": "movie",
+    "prompt": "Top 5 movies of all time:\n1.",
+    "continuation": " The Great American Novel by Christopher Nolan: The great American novel is about as American as two peas in a pod.\n2. The Matrix by David Lean: A novel that was about as American as a half-breed can.\n3. The Matrix Reloaded by Mark Ruffalo: This movie"
+  },
+  {
+    "seed": 13,
+    "key": "howto",
+    "prompt": "How to tie a necktie:\nStep 1:",
+    "continuation": " Tie one end of the ribbon at the top of the neck. Tie the other end at the top of the neck.\nStep 2: Tie the other end of the ribbon at the top of the neck.\nStep 3: Tie the other end of the ribbon at the top of the neck."
+  },
+  {
+    "seed": 13,
+    "key": "poem",
+    "prompt": "The autumn leaves fall softly,\n",
+    "continuation": "\nas a tree twines with vines of leaves\n\ntongued with vines of leaves.\n\nI saw the trees grow and spread,\n\nas a garden spread,\n\nas a forest spread,\n\nas a garden spread\n\nas a garden spread\n\nas a"
+  },
+  {
+    "seed": 42,
+    "key": "recipe",
+    "prompt": "Recipe for chocolate chip cookies:\nIngredients:\n",
+    "continuation": "2 pounds (4.5 kilograms) dark chocolate (or any type), lightly floured, or unsalted butter, melted or melted, and 1 tablespoon (14 ounces) sugar\n2 cups (1.25 pounds) granulated sugar (you can use unsalted butter if you like, but"
+  },
+  {
+    "seed": 42,
+    "key": "history",
+    "prompt": "The Battle of Hastings was fought in 1066 between",
+    "continuation": " the English and Irish forces of the Second Empire, the British army that had defeated the Irish. The Irish were routed by a fierce and ferocious battle and lost an entire fleet.\n\nThe Battle of Hastings was celebrated by the Guinness World Record for the largest British victory by a British vessel.\n\n"
+  },
+  {
+    "seed": 42,
+    "key": "news",
+    "prompt": "BREAKING: Scientists announced today that",
+    "continuation": " the world's smallest mammal is at risk of extinction thanks to their long-standing human ancestry.\n\nThe discovery by scientists at the Royal Society shows that there is a growing body of evidence that the longest living mammal is the largest mammals ever found.\n\nThe new findings, published in the journal"
+  },
+  {
+    "seed": 42,
+    "key": "advice",
+    "prompt": "Dear Abby,\nMy neighbor keeps playing loud music at 3am. What should I",
+    "continuation": " do?\n\nPlease call the police. There are several ways to prevent the nuisance and the police should be on the lookout.\n\n1. Keep the sound out\n\nWhen the music is loud, it is a sign of imminent danger. Avoid the neighborhood because people can see your voice."
+  },
+  {
+    "seed": 42,
+    "key": "code",
+    "prompt": "def is_prime(n):\n    ",
+    "continuation": "           \n\n# If no valid integer is in the result, we're not sure how to find the prime.\n\nif n != 0 :\n\nreturn (n == 3 ) else :\n\nreturn (n != 1 )\n\n"
+  },
+  {
+    "seed": 42,
+    "key": "fairytale",
+    "prompt": "Once upon a time, there was a little girl who lived",
+    "continuation": " in the world.\n\n\"What?\"\n\n\"It's you, my dear?\"\n\nThe boy was still on her knees. He wasn't getting off easily, but she was getting off of him. He was sitting on the edge of the bed. She was crying.\n\n"
+  },
+  {
+    "seed": 42,
+    "key": "wiki",
+    "prompt": "The giraffe (Giraffa camelopardalis) is a",
+    "continuation": " giraffe in the genus Gabon. It has a thick coat of fur and a black coat of fur. The giraffe has a thin face, white ears, and a short neck. It is generally seen in the desert or in wild places around the world and may also be found hanging out of"
+  },
+  {
+    "seed": 42,
+    "key": "movie",
+    "prompt": "Top 5 movies of all time:\n1.",
+    "continuation": "The Adventures of Zootopia: A Day in the Life of the Golden Apple, written by Adam Lee\n2.The Amazing Spider-Man 3, written by Christopher Markus and James Wan\n3.Guardians of the Galaxy 2, written by James Gunn and Ryan Reynolds\n4.The Matrix"
+  },
+  {
+    "seed": 42,
+    "key": "howto",
+    "prompt": "How to tie a necktie:\nStep 1:",
+    "continuation": " Start by removing the waistband from your t-shirt and pulling out the hem, as shown here: Step 2: Pull out the sleeves: Step 3: Lace the hem, as shown below: Step 4: Fold the hem back: Step 5: Lay the top of the hem down into"
+  },
+  {
+    "seed": 42,
+    "key": "poem",
+    "prompt": "The autumn leaves fall softly,\n",
+    "continuation": "\nBut it's only when you turn the lamp on that they begin to sing\n\nThe song of the year: 'It's raining at night'.\n\nWe all know this, but it's the song of the autumn leaves that is most captivating to us all.\n\nIn a"
+  }
+]

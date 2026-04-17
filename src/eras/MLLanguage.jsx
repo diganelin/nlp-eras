@@ -10,7 +10,7 @@ const STEPS = [
   { id: "label",   label: "Spot the Spam" },
   { id: "train",   label: "Train a Model" },
   { id: "test",    label: "See Predictions" },
-  { id: "retrain", label: "Use 100 Words" },
+  { id: "retrain", label: "Auto-Pick Words" },
 ];
 
 export default function MLLanguage() {

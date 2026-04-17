@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { STARTERS } from "./generateData.js";
 
-// Stage 3 — "One model, many tasks". Student picks a starter. The preselected
-// sample is streamed word-by-word to give the feel of autoregressive
-// generation. No live model; samples are verbatim real char-RNN outputs
-// from Karpathy (2015) plus one modern-LLM Python sample for contrast.
+// Stage 4 — "One model, many tasks". Student picks a starter. The
+// preselected sample is streamed word-by-word to give the feel of
+// autoregressive generation. No live model; samples are a mix of
+// real char-RNN outputs (Karpathy 2015, Janelle Shane), locally-run
+// GPT-2 completions, and one modern-LLM Python sample for contrast.
 
-const WORD_MS = 45;
+const WORD_MS = 55;
 
 function tokenize(text) {
   // split on whitespace but keep whitespace so we can render verbatim
@@ -61,7 +62,6 @@ export default function Generate() {
             onClick={() => pickStarter(s.id)}
           >
             <span className="gen__starter-label">{s.label}</span>
-            <span className="gen__starter-blurb">{s.blurb}</span>
           </button>
         ))}
       </div>
@@ -70,13 +70,13 @@ export default function Generate() {
         <div className="gen__generated">
           <div className="gen__source">
             <span className="gen__source-label">Source:</span>
-            <a
-              href="https://karpathy.github.io/2015/05/21/rnn-effectiveness/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {starter.blurb}
-            </a>
+            {starter.sourceUrl ? (
+              <a href={starter.sourceUrl} target="_blank" rel="noopener noreferrer">
+                {starter.blurb}
+              </a>
+            ) : (
+              <span>{starter.blurb}</span>
+            )}
           </div>
           <div className={`gen__output ${starter.mono ? "gen__output--mono" : ""}`}>
             {streamed}

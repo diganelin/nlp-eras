@@ -4,14 +4,14 @@ import Rules from "./eras/Rules.jsx";
 import MLLanguage from "./eras/MLLanguage.jsx";
 import Embeddings from "./eras/Embeddings.jsx";
 import Generalized from "./eras/Generalized.jsx";
+import TrainingHard from "./eras/TrainingHard.jsx";
 
 const ERAS = [
-  { id: "rules",      label: "Rules & Dictionaries", year: "pre-2000" },
-  { id: "ml",         label: "ML with Language",     year: "~2000"    },
-  { id: "embeddings", label: "Numbers & Meaning",    year: "~2013"    },
-  { id: "generative", label: "Generalized Learning", year: "~2020"    },
-  { id: "scale",      label: "Scale & Transformers", year: "~2017"    },
-  { id: "alignment",  label: "Training Right",       year: "~2022"    },
+  { id: "rules",        label: "Rules & Dictionaries", year: "pre-2000" },
+  { id: "ml",           label: "ML with Language",     year: "~2000"    },
+  { id: "embeddings",   label: "Numbers & Meaning",    year: "~2013"    },
+  { id: "generative",   label: "Generalized Learning", year: "~2020"    },
+  { id: "traininghard", label: "Training Hard",        year: "2022–26"  },
 ];
 
 function EraTab({ era, active, onClick }) {
@@ -34,6 +34,7 @@ function EraPanel({ era }) {
   if (era.id === "ml") return <MLLanguage />;
   if (era.id === "embeddings") return <Embeddings />;
   if (era.id === "generative") return <Generalized />;
+  if (era.id === "traininghard") return <TrainingHard />;
   return (
     <div className="era-panel-placeholder">
       <div className="era-panel-placeholder__icon">🚧</div>

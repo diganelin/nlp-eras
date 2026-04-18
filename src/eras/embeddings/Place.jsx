@@ -12,8 +12,8 @@ function shuffled(arr) {
   return a;
 }
 
-// Stage 01: Name two axes, then drag 12 words onto a 2D grid.
-// Grid snaps to 0.1 on [-1, 1].
+// Stage 01: Name two axes, then drag the emotion words onto a 2D grid.
+// Word list comes from `STUDENT_WORDS` (9 words). Grid snaps to 0.1 on [-1, 1].
 
 const SNAP = 0.1;
 

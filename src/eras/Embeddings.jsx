@@ -22,7 +22,7 @@ export default function Embeddings() {
 
   const current = STEPS[stepIdx];
 
-  const placeReady = Object.keys(placements).length === 12 && axisNames.x && axisNames.y;
+  const placeReady = Object.keys(placements).length === 9 && axisNames.x && axisNames.y;
 
   return (
     <div className="eliza">

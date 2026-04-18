@@ -5,12 +5,14 @@ import Test from "./ml/Test.jsx";
 import Retrain from "./ml/Retrain.jsx";
 import { TEST_CORPUS, sampleLabelingRounds } from "./ml/smsData.js";
 import { evaluate } from "./ml/classifier.js";
+import EraRecap from "../components/EraRecap.jsx";
 
 const STEPS = [
   { id: "label",   label: "Spot the Spam" },
   { id: "train",   label: "Train a Model" },
   { id: "test",    label: "See Predictions" },
   { id: "retrain", label: "Auto-Pick Words" },
+  { id: "recap",   label: "Recap" },
 ];
 
 export default function MLLanguage() {
@@ -28,15 +30,6 @@ export default function MLLanguage() {
 
   return (
     <div className="eliza">
-      <p className="eliza__intro">
-        By the late 1990s, inboxes drowned in <strong>spam</strong>. Hand-written rules
-        couldn't keep up. So researchers tried something new: turn text into <strong>numbers</strong>,
-        and let math sort it out.
-        <span className="eliza__intro-note">
-          Messages based on the <a href="https://archive.ics.uci.edu/dataset/228/sms+spam+collection" target="_blank" rel="noopener noreferrer">UCI SMS Spam Collection</a>.
-        </span>
-      </p>
-
       <div className="eliza__stepper">
         {STEPS.map((s, i) => {
           const lockedTrain   = i === 1 && completedRounds < rounds.length;
@@ -92,6 +85,7 @@ export default function MLLanguage() {
             priorWordCount={Object.keys(picks).length}
           />
         )}
+        {current.id === "recap" && <EraRecap id="ml" />}
       </div>
     </div>
   );

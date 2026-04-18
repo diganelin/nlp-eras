@@ -100,9 +100,6 @@ export default function Generate() {
         <div className="gen__placeholder">Pick a starter to watch the model generate.</div>
       )}
 
-      <div className="gen__takeaway">
-        <strong>Takeaway:</strong> locally the text looks like it came from the right source — Shakespeare sounds Shakespearean, C code has braces and comments. Globally it's nonsense. Fix that, and you get modern LLMs. (Hint: more data, more compute, better architecture. Next era.)
-      </div>
     </div>
   );
 }

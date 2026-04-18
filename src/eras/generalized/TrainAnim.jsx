@@ -210,14 +210,8 @@ export default function TrainAnim({ onAdvance }) {
       <div className="trainanim__meters">
         <Meter label="Sentences read"  value={spellBillions(sentences)}  pct={e} />
         <Meter label="GPU hours"       value={formatHours(hours)}        pct={e} />
-        <Meter label="Electricity"     value={formatDollars(dollars)}    pct={e} />
-        <Meter label="Powers, roughly" value={formatHomesDay(homesDay)}  pct={e} />
-      </div>
-      <div className="thard-src">
-        GPT-3 training estimates: {" "}
-        <a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener noreferrer">Brown et al 2020</a>{" · "}
-        <a href="https://arxiv.org/abs/2104.10350" target="_blank" rel="noopener noreferrer">Patterson et al 2021</a>{" · "}
-        <a href="https://lambda.ai/blog/demystifying-gpt-3" target="_blank" rel="noopener noreferrer">Lambda Labs cost estimate</a>
+        <Meter label="Compute cost"    value={formatDollars(dollars)}    pct={e} />
+        <Meter label="Electricity"     value={formatHomesDay(homesDay)}  pct={e} />
       </div>
 
       <div className="gen__footer">

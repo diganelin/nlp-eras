@@ -218,12 +218,6 @@ export default function Tag({ onAdvance }) {
         </div>
       )}
 
-      {allPlaced && pair.takeaway && (
-        <div className="tag__takeaway">
-          <strong>What the model learned:</strong> {pair.takeaway}
-        </div>
-      )}
-
       <div className="gen__footer">
         <button className="btn btn--ghost" onClick={backToPicker}>
           ← All examples

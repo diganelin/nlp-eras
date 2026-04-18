@@ -4,11 +4,13 @@ import MatchGame from "./rules/MatchGame.jsx";
 import BuildRule from "./rules/BuildRule.jsx";
 import { RULES } from "./rules/elizaRules.js";
 import { compileRules } from "./rules/elizaEngine.js";
+import EraRecap from "../components/EraRecap.jsx";
 
 const STEPS = [
   { id: "chat",  label: "Chat with ELIZA" },
   { id: "match", label: "Match the Rule" },
   { id: "build", label: "Build Your Own" },
+  { id: "recap", label: "Recap" },
 ];
 
 export default function Rules() {
@@ -20,17 +22,6 @@ export default function Rules() {
 
   return (
     <div className="eliza">
-      <p className="eliza__intro">
-        In 1966, MIT professor Joseph Weizenbaum created <strong>ELIZA</strong> —
-        one of the first programs people could have a conversation with. She
-        played the role of a therapist. Some users were so convinced she
-        understood them that Weizenbaum spent the rest of his career warning
-        people about trusting computers too much.
-        <span className="eliza__intro-note">
-          <a href="https://www.masswerk.at/elizabot/" target="_blank" rel="noopener noreferrer">Try the original</a>.
-        </span>
-      </p>
-
       <div className="eliza__stepper">
         {STEPS.map((s, i) => (
           <button
@@ -59,6 +50,7 @@ export default function Rules() {
           />
         )}
         {current.id === "build" && <BuildRule />}
+        {current.id === "recap" && <EraRecap id="rules" />}
       </div>
     </div>
   );

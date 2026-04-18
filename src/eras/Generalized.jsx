@@ -2,11 +2,13 @@ import { useState } from "react";
 import Predict from "./generalized/Predict.jsx";
 import TrainAnim from "./generalized/TrainAnim.jsx";
 import Tag from "./generalized/Tag.jsx";
+import EraRecap from "../components/EraRecap.jsx";
 
 const STEPS = [
   { id: "predict", label: "You're the Model" },
   { id: "train",   label: "Train on Everything" },
   { id: "tag",     label: "What Did It Learn?" },
+  { id: "recap",   label: "Recap" },
 ];
 
 export default function Generalized() {
@@ -17,19 +19,6 @@ export default function Generalized() {
 
   return (
     <div className="eliza">
-      <p className="eliza__intro">
-        Training a new model for every new task was getting exhausting. Researchers
-        noticed something simpler: when people talk, we just produce one word at a time.
-        What if a machine learned to do <strong>just that</strong> — predict the next word —
-        on every kind of text humans have ever written?
-        <span className="eliza__intro-note">
-          Sources:{" "}
-          <a href="https://en.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a>,{" "}
-          <a href="https://huggingface.co/datasets/agentlans/common-crawl-sample" target="_blank" rel="noopener noreferrer">Common Crawl</a>,{" "}
-          <a href="https://huggingface.co/openai-community/gpt2" target="_blank" rel="noopener noreferrer">GPT-2</a>.
-        </span>
-      </p>
-
       <div className="eliza__stepper">
         {STEPS.map((s, i) => (
           <button
@@ -47,6 +36,7 @@ export default function Generalized() {
         {current.id === "predict" && <Predict onAdvance={() => go(1)} />}
         {current.id === "train"   && <TrainAnim onAdvance={() => go(2)} />}
         {current.id === "tag"     && <Tag />}
+        {current.id === "recap"   && <EraRecap id="generative" />}
       </div>
     </div>
   );

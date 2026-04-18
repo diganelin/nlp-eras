@@ -4,6 +4,7 @@ import Vectorize from "./embeddings/Vectorize.jsx";
 import MiniNN from "./embeddings/MiniNN.jsx";
 import Scale from "./embeddings/Scale.jsx";
 import Classify from "./embeddings/Classify.jsx";
+import EraRecap from "../components/EraRecap.jsx";
 
 const STEPS = [
   { id: "place",      label: "Place the Words" },
@@ -11,6 +12,7 @@ const STEPS = [
   { id: "mini",       label: "Mini Neural Network" },
   { id: "scale",      label: "Scale Up" },
   { id: "classify",   label: "Classify at Scale" },
+  { id: "recap",      label: "Recap" },
 ];
 
 export default function Embeddings() {
@@ -24,23 +26,6 @@ export default function Embeddings() {
 
   return (
     <div className="eliza">
-      <p className="eliza__intro">
-        By the early 2010s, researchers found a way to turn words into <strong>numbers</strong> —
-        not just counts, but numbers that captured <strong>meaning</strong>. Similar words got similar numbers.
-        Suddenly, machines could do more than match text: they could compare ideas.
-        <span className="eliza__intro-note">
-          Based on{" "}
-          <a
-            href="https://nlp.stanford.edu/projects/glove/"
-            target="_blank" rel="noopener noreferrer"
-          >GloVe / word2vec-style word embeddings</a>. Tweets sampled from the{" "}
-          <a
-            href="http://help.sentiment140.com/"
-            target="_blank" rel="noopener noreferrer"
-          >Sentiment140 corpus</a>.
-        </span>
-      </p>
-
       <div className="eliza__stepper">
         {STEPS.map((s, i) => {
           const locked =
@@ -90,6 +75,7 @@ export default function Embeddings() {
           <Scale onAdvance={() => setStepIdx(4)} />
         )}
         {current.id === "classify" && <Classify />}
+        {current.id === "recap" && <EraRecap id="embeddings" />}
       </div>
     </div>
   );

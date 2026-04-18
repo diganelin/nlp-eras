@@ -220,15 +220,6 @@ function Automation({ onAdvance }) {
           </div>
         </div>
         <div className="thard-automation-caption">{AUTOMATION_STATS.caption}</div>
-        <div className="thard-src">
-          sources:{" "}
-          <a href="https://arxiv.org/abs/2104.10350" target="_blank" rel="noopener noreferrer">
-            Patterson et al 2021 (training energy)
-          </a>{" · "}
-          <a href="https://arxiv.org/abs/2304.03271" target="_blank" rel="noopener noreferrer">
-            Li et al 2023 (data-center water)
-          </a>
-        </div>
         {done && (
           <div className="thard-footer">
             <button className="btn btn--primary" onClick={onAdvance}>

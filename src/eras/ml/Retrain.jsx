@@ -127,13 +127,6 @@ export default function Retrain({ priorAccuracy, priorWordCount }) {
             </div>
           </div>
 
-          <div className="ml__prompt ml__prompt--quiet">
-            <div className="ml__prompt-body">
-              <strong>Notice anything weird?</strong> The model has no idea what these words <em>mean</em>.
-              "winning" and "winner" are unrelated as far as it knows. "free" in spam and "free Saturday" in legit get the same score.
-              That's the limit of bag-of-words — and what the next era tries to fix.
-            </div>
-          </div>
         </>
       )}
     </div>

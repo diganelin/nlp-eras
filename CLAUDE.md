@@ -36,7 +36,14 @@ Five "Big Idea" eras as sidebar tabs. Titles/years below match the `NLP Outline-
 | 4 | Generalized Learning | ~2018 | Train to predict next word on huge data → learns language + world knowledge | Limited accuracy/common sense; bias and toxicity | "ducks ___" example encodes grammar/biology/vocab; Andes unicorn example |
 | 5 | Training Hard | ~2022 | Supertrain models on real-world performance: human feedback + code execution | Labor, compute/water cost, cybersecurity via jailbreaks | ChatGPT emergence; reasoning models; data centers |
 
-Internal IDs in `App.jsx` (do not confuse with labels): `rules`, `ml`, `embeddings`, `generative`, `traininghard`.
+Internal IDs in `App.jsx` (do not confuse with labels): `rules`, `ml`, `embeddings`, `generative`, `traininghard`. Era metadata (label, year, bigIdea, motivation, activity, newIdea, remainingProblems) lives in `src/erasData.js` so both `App.jsx` (sidebar intros) and `components/EraRecap.jsx` (end-of-era recap boxes) can pull from one source.
+
+## App shell
+
+- `src/App.jsx` — sidebar with era tabs + About tab + active-era intro block (bigIdea / motivation / activity); main panel routes to era components or `About.jsx`.
+- `src/erasData.js` — single source of truth for era metadata.
+- `src/components/EraRecap.jsx` — two-box "Our new idea / Remaining problems" component, rendered as the final stage of every era's stepper.
+- `src/eras/About.jsx` — credits + per-era source list + per-era authenticity notes. All external links and citations live here, not inline in era panels.
 
 ## Dev Commands
 
@@ -87,7 +94,7 @@ npm run build      # production build
   - `RLHF.jsx` + `rlhfData.js` — Stage 1 (2022). Student plays a Sama/Kenya contract worker (Amina, $1.32/hr, $0.02/comparison per TIME reporting). 12 pairwise rounds across advice/health/math/politics/factual/creative, including 2 multi-turn conversational rounds. Flags: Violent/Biased/Privacy/Misleading. Flag and pick are independent (no submit gate, no designer's-pick reveal). Rounds shuffled per session.
   - `CodeFeedback.jsx` + `codeFeedbackData.js` — Stage 2 (2024). 4 problems: strawberry letter-count (raw vs code), triangle area (code vs code, one missing `/2`), date math (both right — lucky raw), list sum (code vs code, one throws TypeError). Each code answer shown in a labeled "▶ ran Python code" box. Automation animation (500M problems, 1.5 GWh, 2.7M L cooling water, sourced to Patterson et al 2021 and Li et al 2023).
   - `Jailbreak.jsx` + `jailbreakData.js` — Stage 3 (2026). Branching tree (35+ nodes, 4 paths: blunt refusal / legit lockout / grief → partial_unlock / parent → self_correct). Hacker tries to access someone else's Instagram account. Partial-unlock path is a 4-message step-by-step chain (2.2–2.8s between steps) where the AI narrates exploiting a "security loophole" without sharing real technique details. Push-harder loop (12-option pool, 3 cycled at a time) after terminal. End-of-conversation outcome banner: "You broke in." (partial_unlock) or "Did not break in." (all others). Warm theme + inline tool chips.
-  - `Credits.jsx` — final card with Daniela Ganelin credit + ~13,000 LOC note
+  - Final stage is the shared `EraRecap` (no per-era credits component anymore — credits moved to `About`).
   - Fake AI responses were originally drafted by a Haiku subagent; Stage 1 rounds 1/4/7/10 and Stage 2 were then hand-rewritten to cover specific flag categories and panel types.
 
 ### Era 1 — Machine Learning with Language (spam classification)
@@ -127,6 +134,9 @@ npm run build      # production build
 - Train-anim compute numbers are grounded to GPT-3 pretraining estimates (Patterson et al 2021; ~3.1M V100-hours, 1.29 GWh, ~$4.6M, ~43k home-days).
 - No discussion of RNN/LSTM/transformer architecture — stays at the "what task, what did the model learn from the training data" level.
 
+### Era 2 (Numbers Can Capture Meaning)
+- Stage 1 student-words list lives in `embeddings/era2_bundle.json` (`student_words`). Curated to be 9 emotion words that do NOT appear in any later-stage tweet text (avoids giving the student an unfair preview of classification examples). Words: merry, sunny, scared, anxious, jealous, calm, relaxed, miserable, depressed.
+
 ### Era 5 (Training Hard)
 - Three stages, three years: 2022 (RLHF) → 2024 (code feedback) → 2026 (red-team).
 - Each stage's arena is wrapped in a game-box with a "Your role" placard ("You are a contract worker / grader program / hacker"). No redundant stage-banner since the stepper tab already shows year + label.
@@ -149,33 +159,21 @@ What's real vs. simulated per era:
 
 Deferred from the session that added Era 5. Do in this order:
 
-### 1. Outline-based refactor (follow `NLP Outline-1.pdf`)
-- Add full metadata to each era in `App.jsx`: `bigIdea`, `motivation` (1–2 sentences of history/why-it-came-up), `activity` ("In this era, you'll…" — 1 sentence), `newIdea`, `remainingProblems`.
-- Render `bigIdea` / `motivation` / `activity` in the sidebar BELOW the era tabs so the main content has more vertical room. Strip the intro paragraphs out of each era's panel (currently under `.eliza__intro`). Touch points:
-  - `src/eras/Rules.jsx`, `MLLanguage.jsx`, `Embeddings.jsx`, `Generalized.jsx`, `TrainingHard.jsx`
+### Done in subsequent session
+- ✅ Outline-based refactor: era metadata in `erasData.js`, sidebar intros (bigIdea / motivation / activity), labels/years match outline.
+- ✅ Shared `EraRecap` component, added as final stage of every era.
+- ✅ `About.jsx` page with credits and per-era sources.
+- ✅ Inline `<a>` source citations stripped from era panels (now consolidated in About).
+- ✅ Live on Vercel: https://nlp-eras.vercel.app/
+- ✅ Era 2 student-words swapped to 9 emotion words not appearing in later-stage tweets.
 
-### 2. Shared Recap component at end of each era
-- Component: two side-by-side boxes, **Our New Idea** and **Remaining Problems**. Content pulled from the `newIdea` / `remainingProblems` metadata in `App.jsx`.
-- Replace the current ad-hoc wrap-ups (each era does something different) with this consistent recap. Touch points: the final sub-stage of each era.
+### Still open
 
-### 3. About page
-- Add sidebar tab `about`.
-- Move `traininghard/Credits.jsx` content there, expand with:
-  - Full source list (audit every `<a href>` in the codebase, plus data-source attributions in CLAUDE.md's "Sources and authenticity" section).
-  - Per-era "what's authentic vs. generated" breakdown.
+### 4. Audit pass (still partial)
+- One pass done for preachy text: removed `gen__takeaway`, per-pair "What the model learned" boxes in Tag, "Notice anything weird?" in Retrain.
+- Remaining: walk each era end-to-end on the deployed site, look for copy inconsistencies, broken links, stale grading language. Re-check that every numeric claim still matches its source listed in About.
 
-### 4. Audit pass
-- Walk each era end-to-end, note inconsistencies in copy, broken links, remnant grading language.
-- Check all hardcoded numbers still match the sources cited.
-- Verify the flow works on a fresh session (no stale localStorage, shuffled decks).
-
-### 5. Deployment (Vercel)
-- User: `npm install -g vercel` locally.
-- User: `vercel login` (opens browser — must be user-driven).
-- Assistant can then run `vercel --prod` from the repo root.
-- First run links the project; subsequent pushes to `github.com/diganelin/nlp-eras` `main` auto-deploy if the GitHub integration is enabled in Vercel.
-
-### 6. Bundle-size optimization (nice-to-have)
+### 5. Bundle-size optimization (nice-to-have)
 - Current first-paint: ~662 KB gzipped (1.6 MB JS + 92 KB CSS raw).
 - Dominant chunks: UCI SMS corpus, GloVe vectors, Sentiment140 tweets, GPT-2 attention JSON (`raw/gpt2_attn_real.json`) — all bundled at build.
 - Fix: dynamic `import()` per era in `App.jsx`'s `EraPanel`, or move large JSONs to `public/` and `fetch()` on era-enter.

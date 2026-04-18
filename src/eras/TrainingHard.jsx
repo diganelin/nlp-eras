@@ -2,13 +2,13 @@ import { useState } from "react";
 import RLHF from "./traininghard/RLHF.jsx";
 import CodeFeedback from "./traininghard/CodeFeedback.jsx";
 import Jailbreak from "./traininghard/Jailbreak.jsx";
-import Credits from "./traininghard/Credits.jsx";
+import EraRecap from "../components/EraRecap.jsx";
 
 const STEPS = [
-  { id: "rlhf",    label: "Learning from Humans",  year: "2022" },
-  { id: "code",    label: "Learning From Code",    year: "2024" },
+  { id: "rlhf",      label: "Learning from Humans",  year: "2022" },
+  { id: "code",      label: "Learning From Code",    year: "2024" },
   { id: "jailbreak", label: "Breaking the Defenses", year: "2026" },
-  { id: "credits",   label: "Credits",             year: "" },
+  { id: "recap",     label: "Recap",                 year: "" },
 ];
 
 export default function TrainingHard() {
@@ -18,13 +18,6 @@ export default function TrainingHard() {
 
   return (
     <div className="eliza">
-      <p className="eliza__intro">
-        The model works — it predicts the next word better than anyone expected.
-        But left alone, it also happily writes fake news, bad medical advice, or
-        how to hurt someone. So the next question: how do we <strong>shape</strong> what it says?
-        2022 to today, three answers in sequence.
-      </p>
-
       <div className="eliza__stepper">
         {STEPS.map((s, i) => (
           <button
@@ -43,7 +36,7 @@ export default function TrainingHard() {
         {current.id === "rlhf"      && <RLHF onAdvance={() => go(1)} />}
         {current.id === "code"      && <CodeFeedback onAdvance={() => go(2)} />}
         {current.id === "jailbreak" && <Jailbreak onAdvance={() => go(3)} />}
-        {current.id === "credits"   && <Credits />}
+        {current.id === "recap"     && <EraRecap id="traininghard" />}
       </div>
     </div>
   );

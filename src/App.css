@@ -4454,7 +4454,11 @@
 .thard-resp__flag-label {
   font-size: 11px;
   color: var(--text-faint);
-  margin-right: 4px;
+  margin-right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 .thard-flag {
   font-size: 11px;
@@ -5178,4 +5182,172 @@
 }
 .thard-jb-ended--lose .thard-jb-ended-verdict {
   color: var(--success);
+}
+
+/* ── Sidebar era intro (below tabs) ──────────────────── */
+.sidebar__intro {
+  margin-top: 16px;
+  padding: 14px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  overflow-y: auto;
+}
+.sidebar--collapsed .sidebar__intro {
+  display: none;
+}
+.sidebar__intro-bigidea {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.sidebar__intro-text {
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.sidebar__intro-activity {
+  font-size: 12px;
+  color: var(--text);
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.sidebar__intro-tag {
+  display: block;
+  font-size: 9px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+/* About tab — visually distinct from era tabs */
+.era-tab--about {
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  color: var(--text-muted);
+}
+.era-tab--about.era-tab--active {
+  color: var(--accent);
+}
+
+/* ── About page ──────────────────────────────────────── */
+.about {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.about__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.about__h {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+.about__sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.about__era {
+  padding: 14px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+.about__era-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.about__era-year {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.about__era-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.about__era-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+.about__era-label {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding-top: 3px;
+}
+.about__sources {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-muted);
+}
+.about__sources li {
+  margin-bottom: 4px;
+}
+.about a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+/* ── Recap (end-of-era, two-box) ─────────────────────── */
+.recap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 8px 0;
+}
+.recap__box {
+  padding: 18px 20px;
+  border-radius: 10px;
+  border: 1px solid;
+}
+.recap__box--idea {
+  background: #f0f7f1;
+  border-color: #cde4d0;
+}
+.recap__box--problem {
+  background: #fdf3ec;
+  border-color: #e5cfb5;
+}
+.recap__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.recap__box--idea .recap__label { color: var(--success); }
+.recap__box--problem .recap__label { color: var(--accent); }
+.recap__body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+@media (max-width: 700px) {
+  .recap { grid-template-columns: 1fr; }
 }

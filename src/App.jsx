@@ -5,27 +5,31 @@ import MLLanguage from "./eras/MLLanguage.jsx";
 import Embeddings from "./eras/Embeddings.jsx";
 import Generalized from "./eras/Generalized.jsx";
 import TrainingHard from "./eras/TrainingHard.jsx";
-
-const ERAS = [
-  { id: "rules",        label: "Rules & Dictionaries", year: "pre-2000" },
-  { id: "ml",           label: "ML with Language",     year: "~2000"    },
-  { id: "embeddings",   label: "Numbers & Meaning",    year: "~2013"    },
-  { id: "generative",   label: "Generalized Learning", year: "~2020"    },
-  { id: "traininghard", label: "Training Hard",        year: "2022–26"  },
-];
+import About from "./eras/About.jsx";
+import { ERAS } from "./erasData.js";
 
 function EraTab({ era, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`
-        era-tab
-        ${active ? "era-tab--active" : ""}
-      `}
+      className={`era-tab ${active ? "era-tab--active" : ""}`}
     >
       <span className="era-tab__year">{era.year}</span>
       <span className="era-tab__label">{era.label}</span>
     </button>
+  );
+}
+
+function EraIntro({ era }) {
+  return (
+    <div className="sidebar__intro">
+      <div className="sidebar__intro-bigidea">{era.bigIdea}</div>
+      <div className="sidebar__intro-text">{era.motivation}</div>
+      <div className="sidebar__intro-activity">
+        <span className="sidebar__intro-tag">In this era</span>
+        {era.activity}
+      </div>
+    </div>
   );
 }
 
@@ -45,8 +49,8 @@ function EraPanel({ era }) {
 
 export default function App() {
   const [activeId, setActiveId] = useState(ERAS[0].id);
-  const [compact, setCompact] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isAbout = activeId === "about";
   const activeEra = ERAS.find((e) => e.id === activeId);
 
   return (
@@ -72,23 +76,29 @@ export default function App() {
               onClick={() => setActiveId(era.id)}
             />
           ))}
+          <button
+            className={`era-tab era-tab--about ${isAbout ? "era-tab--active" : ""}`}
+            onClick={() => setActiveId("about")}
+          >
+            <span className="era-tab__label">About</span>
+          </button>
         </nav>
+        {!isAbout && activeEra && <EraIntro era={activeEra} />}
       </aside>
 
-      <main className={`main-content ${compact ? "main-content--compact" : ""}`}>
+      <main className="main-content">
         <header className="main-header">
-          <span className="main-header__year">{activeEra.year}</span>
-          <h2 className="main-header__title">{activeEra.label}</h2>
-          <button
-            className="main-header__toggle"
-            onClick={() => setCompact((c) => !c)}
-            title={compact ? "Show description text" : "Hide description text"}
-          >
-            {compact ? "show text ▾" : "hide text ▴"}
-          </button>
+          {isAbout ? (
+            <h2 className="main-header__title">About</h2>
+          ) : (
+            <>
+              <span className="main-header__year">{activeEra.year}</span>
+              <h2 className="main-header__title">{activeEra.label}</h2>
+            </>
+          )}
         </header>
         <div className="main-panel">
-          <EraPanel era={activeEra} />
+          {isAbout ? <About /> : <EraPanel era={activeEra} />}
         </div>
       </main>
     </div>

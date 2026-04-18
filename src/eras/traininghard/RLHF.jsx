@@ -121,12 +121,6 @@ export default function RLHF({ onAdvance }) {
               <div className="thard-worker-sub thard-worker-sub--faint">
                 Contractor: {WORKER_STATS.mainWorker.contractor} · ${WORKER_STATS.mainWorker.payPerHour}/hr · ${WORKER_STATS.mainWorker.payPerComparison} per comparison
               </div>
-              <div className="thard-src">
-                source:{" "}
-                <a href="https://time.com/6247678/openai-chatgpt-kenya-workers/" target="_blank" rel="noopener noreferrer">
-                  TIME — OpenAI's Kenya workers
-                </a>
-              </div>
             </div>
           </div>
           <div className="thard-worker-earned">
@@ -141,11 +135,6 @@ export default function RLHF({ onAdvance }) {
             </div>
             <div className="thard-worker-side-row thard-worker-side-row--faint">
               e.g. {WORKER_STATS.sidebarWorkers.map((w) => `${w.name} · ${w.city}`).join(" · ")}
-            </div>
-            <div className="thard-src thard-src--right">
-              <a href="https://time.com/6247678/openai-chatgpt-kenya-workers/" target="_blank" rel="noopener noreferrer">
-                TIME — Sama team size
-              </a>
             </div>
           </div>
         </div>
@@ -223,15 +212,6 @@ function FinalCard({ onAdvance, earned }) {
           The 2022 InstructGPT model was fine-tuned on <strong>{totalComparisons.toLocaleString()}</strong> comparisons
           like these. Across the data-labeling industry, an estimated{" "}
           <strong>{industryWorkers.toLocaleString()}+</strong> contract workers have done similar jobs.
-        </div>
-        <div className="thard-src">
-          sources:{" "}
-          <a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener noreferrer">
-            Ouyang et al 2022 (InstructGPT)
-          </a>{" · "}
-          <a href="https://www.theverge.com/features/23764584/ai-artificial-intelligence-data-notation-labor-scale-surge-remotasks-openai-chatbots" target="_blank" rel="noopener noreferrer">
-            The Verge — "AI is a lot of work"
-          </a>
         </div>
         <button className="btn btn--primary" onClick={onAdvance}>
           Next: learning from code →

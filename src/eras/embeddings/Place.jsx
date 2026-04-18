@@ -95,18 +95,15 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
   const prefill = () => {
     setAxisNames({ x: "high energy", xLow: "low energy", y: "happy", yLow: "sad" });
     setPlacements({
-      thrilled: [ 0.7,  0.8],
-      pumped:   [ 0.9,  0.6],
-      excited:  [ 0.6,  0.7],
-      chill:    [-0.5,  0.4],
-      content:  [-0.6,  0.6],
-      cozy:     [-0.7,  0.5],
-      drained:  [-0.6, -0.6],
-      bored:    [-0.7, -0.4],
-      tired:    [-0.8, -0.5],
-      furious:  [ 0.8, -0.7],
-      stressed: [ 0.6, -0.6],
-      annoyed:  [ 0.5, -0.5],
+      merry:      [ 0.6,  0.7],
+      sunny:      [ 0.4,  0.7],
+      scared:     [ 0.7, -0.5],
+      anxious:    [ 0.6, -0.4],
+      jealous:    [ 0.5, -0.6],
+      calm:       [-0.6,  0.5],
+      relaxed:    [-0.7,  0.4],
+      miserable:  [-0.5, -0.7],
+      depressed:  [-0.6, -0.6],
     });
   };
 

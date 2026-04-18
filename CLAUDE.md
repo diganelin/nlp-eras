@@ -135,7 +135,7 @@ npm run build      # production build
 - No discussion of RNN/LSTM/transformer architecture — stays at the "what task, what did the model learn from the training data" level.
 
 ### Era 2 (Numbers Can Capture Meaning)
-- Stage 1 student-words list lives in `embeddings/era2_bundle.json` (`student_words`). Curated to be 9 emotion words that do NOT appear in any later-stage tweet text (avoids giving the student an unfair preview of classification examples). Words: merry, sunny, scared, anxious, jealous, calm, relaxed, miserable, depressed.
+- Stage 1 student-words list lives in `embeddings/era2_bundle.json` (`student_words`). 9 emotion words spanning 4 quadrants (HE/LE × happy/sad). Picked specifically because they DO appear in the later-stage tweets — placement primes the student's intuition for the same words they'll meet during sentiment classification. Words: excited, pumped, cozy, content, tired, bored, drained, furious, annoyed.
 
 ### Era 5 (Training Hard)
 - Three stages, three years: 2022 (RLHF) → 2024 (code feedback) → 2026 (red-team).

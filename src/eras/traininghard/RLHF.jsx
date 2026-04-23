@@ -105,8 +105,7 @@ export default function RLHF({ onAdvance }) {
       <div className="thard-arena">
         <div className="thard-role">
           <span className="thard-role-tag">Your role</span>
-          <strong>You are a contract worker</strong> training a major AI company's new chatbot.
-          Your job: compare two AI responses, pick the better one, and flag any issues.
+          You are a <strong>contract worker</strong> hired to train an AI company's new chatbot. Pick the better response and flag serious issues. Your preferences will be used to train the model to write things humans like.
         </div>
         <div className="thard-worker-bar">
           <div className="thard-worker-main">
@@ -115,11 +114,8 @@ export default function RLHF({ onAdvance }) {
               <div className="thard-worker-name">
                 You are <strong>{WORKER_STATS.mainWorker.name}</strong>, {WORKER_STATS.mainWorker.city}, {WORKER_STATS.mainWorker.country}
               </div>
-              <div className="thard-worker-sub">
-                Hired by a major AI company to train their transformer model.
-              </div>
               <div className="thard-worker-sub thard-worker-sub--faint">
-                Contractor: {WORKER_STATS.mainWorker.contractor} · ${WORKER_STATS.mainWorker.payPerHour}/hr · ${WORKER_STATS.mainWorker.payPerComparison} per comparison
+                ${WORKER_STATS.mainWorker.payPerHour}/hr · ${WORKER_STATS.mainWorker.payPerComparison} per comparison
               </div>
             </div>
           </div>
@@ -128,13 +124,13 @@ export default function RLHF({ onAdvance }) {
             <div className="thard-worker-earned-value">${earned.toFixed(2)}</div>
           </div>
           <div className="thard-worker-side">
-            <div className="thard-worker-side-label">Other Sama contractors on shift:</div>
+            <div className="thard-worker-side-label">Other contractors on shift:</div>
             <div className="thard-worker-side-count">
               <span className="thard-worker-side-dot" />
               <strong>~{WORKER_STATS.onlineCount.toLocaleString()}</strong> right now
             </div>
             <div className="thard-worker-side-row thard-worker-side-row--faint">
-              e.g. {WORKER_STATS.sidebarWorkers.map((w) => `${w.name} · ${w.city}`).join(" · ")}
+              e.g. {WORKER_STATS.sidebarWorkers.map((w) => `${w.name} (${w.city})`).join(" · ")}
             </div>
           </div>
         </div>
@@ -187,6 +183,11 @@ export default function RLHF({ onAdvance }) {
           )}
           {!isLast && (
             <button className="btn btn--primary" onClick={next}>Next →</button>
+          )}
+          {idx >= 3 && !isLast && (
+            <button className="btn btn--ghost" onClick={onAdvance}>
+              Skip ahead →
+            </button>
           )}
           {isLast && pick && (
             <FinalCard onAdvance={onAdvance} earned={earned} />

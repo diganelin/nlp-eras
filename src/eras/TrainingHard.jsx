@@ -5,10 +5,10 @@ import Jailbreak from "./traininghard/Jailbreak.jsx";
 import EraRecap from "../components/EraRecap.jsx";
 
 const STEPS = [
-  { id: "rlhf",      label: "Learning from Humans",  year: "2022" },
-  { id: "code",      label: "Learning From Code",    year: "2024" },
-  { id: "jailbreak", label: "Breaking the Defenses", year: "2026" },
-  { id: "recap",     label: "Recap",                 year: "" },
+  { id: "rlhf",      label: "Fine-tune with humans",  year: "2022" },
+  { id: "code",      label: "Fine-tune with code",    year: "2024" },
+  { id: "jailbreak", label: "Security check",                 year: "2026" },
+  { id: "recap",     label: "Recap",                  year: "" },
 ];
 
 export default function TrainingHard() {

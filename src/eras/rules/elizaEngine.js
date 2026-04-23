@@ -349,11 +349,12 @@ export function ruleToSource(rule) {
   lines.push("{");
   if (rule.decomps && rule.decomps.length > 1) {
     if (rule.key) lines.push(`    "key": ${JSON.stringify(rule.key)},`);
-    if (rule.rank) lines.push(`    "rank": ${rule.rank},`);
     lines.push(`    "decomps": [`);
     for (const d of rule.decomps) {
       lines.push(`        {`);
-      lines.push(`            "pattern": ${JSON.stringify(d.pattern)},`);
+      // Pattern always on one line (even if authored as a list, collapse).
+      const pStr = Array.isArray(d.pattern) ? JSON.stringify(d.pattern) : JSON.stringify(d.pattern);
+      lines.push(`            "pattern": ${pStr},`);
       if (d.memory) lines.push(`            "memory": True,`);
       lines.push(`            "responses": [`);
       for (const r of d.responses) {
@@ -365,19 +366,16 @@ export function ruleToSource(rule) {
     lines.push(`    ],`);
   } else {
     const ds = rule.decomps || [rule];
-    const patterns = ds.length > 1
+    const rawPatterns = ds.length > 1
       ? ds.map((d) => d.pattern)
       : (Array.isArray(ds[0].pattern || rule.pattern)
           ? (ds[0].pattern || rule.pattern)
           : [ds[0].pattern || rule.pattern]);
-    if (patterns.length > 1) {
-      lines.push(`    "pattern": [`);
-      for (const p of patterns) lines.push(`        ${JSON.stringify(p)},`);
-      lines.push(`    ],`);
-    } else {
-      lines.push(`    "pattern": ${JSON.stringify(patterns[0])},`);
-    }
-    if (rule.rank) lines.push(`    "rank": ${rule.rank},`);
+    // Pattern always on one line — either a single string or a JSON array literal.
+    const patternValue = rawPatterns.length > 1
+      ? JSON.stringify(rawPatterns)
+      : JSON.stringify(rawPatterns[0]);
+    lines.push(`    "pattern": ${patternValue},`);
     lines.push(`    "responses": [`);
     for (const r of (ds[0].responses || rule.responses)) {
       lines.push(`        ${JSON.stringify(r)},`);

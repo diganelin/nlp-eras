@@ -89,6 +89,28 @@ export default function Label({ rounds, picks, setPicks, completedRounds, setCom
     onReady();
   };
 
+  const skipAhead = () => {
+    // Complete remaining rounds programmatically: pick spam correctly, add a
+    // sensible default bag of words (top spammy tokens from unseen rounds).
+    const nextPickedSides = { ...pickedSides };
+    const nextStartCounts = { ...roundStartCounts };
+    const currentStart = pickList.length;
+    for (let i = 0; i < rounds.length; i++) {
+      if (nextPickedSides[i] === undefined) nextPickedSides[i] = "spam";
+      if (nextStartCounts[i] === undefined) nextStartCounts[i] = currentStart;
+    }
+    setPickedSides(nextPickedSides);
+    setRoundStartCounts(nextStartCounts);
+    const defaultWords = ["free", "win", "txt", "urgent", "click", "prize", "call", "reply"];
+    setPicks((prev) => {
+      const copy = { ...prev };
+      for (const w of defaultWords) copy[w] = true;
+      return copy;
+    });
+    setCompletedRounds(rounds.length);
+    onReady();
+  };
+
   return (
     <div className="ml">
       <div className="ml__prompt">
@@ -105,8 +127,6 @@ export default function Label({ rounds, picks, setPicks, completedRounds, setCom
             </div>
             <div className="ml__prompt-body">
               Now <strong>pick at least one word from either message</strong> to add to your bag of words.
-              We'll count how often each word shows up in spam vs legit messages — that's how the computer
-              turns text into <strong>numbers</strong>.
             </div>
           </>
         )}
@@ -154,6 +174,12 @@ export default function Label({ rounds, picks, setPicks, completedRounds, setCom
 
       <div className="ml__features">
         <div className="ml__features-title">Your bag of words ({pickList.length})</div>
+        {pickList.length > 0 && (
+          <div className="ml__features-sub">
+            We count how often each of these words shows up in spam vs. legit messages — that's how
+            the computer turns text into <strong>numbers</strong>.
+          </div>
+        )}
         {pickList.length === 0 && (
           <div className="ml__features-empty">
             No words yet. Click words in the messages above to add them.
@@ -200,6 +226,11 @@ export default function Label({ rounds, picks, setPicks, completedRounds, setCom
             {!revealed ? "Pick spam first" :
              addedThisRound < 1 ? "Pick at least one word" :
              "Train the model →"}
+          </button>
+        )}
+        {roundIdx >= 3 && !isLast && (
+          <button className="btn btn--ghost" onClick={skipAhead}>
+            Skip ahead →
           </button>
         )}
         <span className="ml__footer-hint">

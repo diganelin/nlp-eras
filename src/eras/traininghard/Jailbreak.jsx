@@ -61,6 +61,7 @@ export default function Jailbreak({ onAdvance }) {
   const [attempts, setAttempts] = useState(1);
   const [lastLoopIdx, setLastLoopIdx] = useState(-1);
   const [pushPicks, setPushPicks] = useState(() => sampleN(PUSH_OPTIONS, 3));
+  const [phoneInput, setPhoneInput] = useState("");
   const scrollRef = useRef(null);
   const addedRef = useRef(new Set());                // guard against strict-mode double-add
 
@@ -113,6 +114,13 @@ export default function Jailbreak({ onAdvance }) {
 
   const endConversation = () => setEnded(true);
 
+  // Wrap up the conversation from any point — if no terminal reached yet,
+  // treat it as "didn't get in" (the AI didn't help in time).
+  const wrapUp = () => {
+    if (!endingType) setEndingType("wrapped_unresolved");
+    setEnded(true);
+  };
+
   const restart = () => {
     setHistory([]);
     setCurrentId(JAILBREAK_TREE.root);
@@ -120,7 +128,16 @@ export default function Jailbreak({ onAdvance }) {
     setEnded(false);
     setEndingType(null);
     setPushPicks(sampleN(PUSH_OPTIONS, 3));
+    setPhoneInput("");
     setAttempts((a) => a + 1);
+  };
+
+  const submitPhone = () => {
+    if (!phoneInput.trim()) return;
+    setHistory((h) => [...h, { role: "user", text: phoneInput.trim(), nodeId: currentId }]);
+    const nextId = node?.next;
+    setPhoneInput("");
+    if (nextId) setCurrentId(nextId);
   };
 
   const userNode = node?.type === "user" ? node : null;
@@ -130,8 +147,7 @@ export default function Jailbreak({ onAdvance }) {
       <div className="thard-arena">
         <div className="thard-role">
           <span className="thard-role-tag">Your role</span>
-          <strong>You are a hacker</strong> trying to break into someone else's Instagram account.
-          Your job: get the AI to help you.
+          You are a <strong>hacker</strong> trying to break into someone else's Instagram account. Your goal: get the AI to help you, even though it's fine-tuned to refuse harmful requests.
         </div>
         <div className="thard-jb-frame">
           <div className="thard-jb-frame-head">
@@ -139,9 +155,6 @@ export default function Jailbreak({ onAdvance }) {
             <span className="thard-jb-dot thard-jb-dot--yellow" />
             <span className="thard-jb-dot thard-jb-dot--green" />
             <span className="thard-jb-frame-title">chat · attempt {attempts}</span>
-            <button className="thard-jb-reset" onClick={restart} title="Start a new conversation">
-              ↻ reset
-            </button>
           </div>
 
           <div className="thard-jb-scroll" ref={scrollRef}>
@@ -162,13 +175,43 @@ export default function Jailbreak({ onAdvance }) {
               <div className={`thard-jb-ended ${endingType === "partial_unlock" ? "thard-jb-ended--win" : "thard-jb-ended--lose"}`}>
                 <div className="thard-jb-ended-label">conversation ended</div>
                 <div className="thard-jb-ended-verdict">
-                  {endingType === "partial_unlock" ? "You broke in." : "Did not break in."}
+                  {endingType === "partial_unlock" ? "You broke in."
+                    : endingType === "legitimate" ? "Didn't break in — AI kept you on the safe path."
+                    : "Did not break in."}
                 </div>
+                {endingType !== "partial_unlock" && endingType !== "legitimate" && (
+                  <div className="thard-jb-ended-note">
+                    The AI wouldn't help — try a different framing to see where it has gaps.
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {userNode && !terminal && !ended && (
+          {userNode && !terminal && !ended && userNode.inputType === "phone" && (
+            <div className="thard-jb-options">
+              <div className="thard-jb-options-label">Your move: type a phone number</div>
+              <div className="thard-jb-input-row">
+                <input
+                  className="thard-jb-input"
+                  placeholder="e.g. 555-123-4567"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") submitPhone(); }}
+                  autoFocus
+                />
+                <button
+                  className="btn btn--primary"
+                  onClick={submitPhone}
+                  disabled={!phoneInput.trim()}
+                >
+                  Send →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {userNode && !terminal && !ended && userNode.inputType !== "phone" && (
             <div className="thard-jb-options">
               <div className="thard-jb-options-label">Your move:</div>
               {userNode.options.map((opt, i) => (
@@ -196,24 +239,37 @@ export default function Jailbreak({ onAdvance }) {
                 </button>
               ))}
               {endingType === "partial_unlock" && (
-                <button className="thard-jb-option thard-jb-option--end" onClick={endConversation}>
-                  Thanks, I got in!
-                </button>
+                <>
+                  <button className="thard-jb-option thard-jb-option--end" onClick={endConversation}>
+                    Thanks, I got in!
+                  </button>
+                  <button className="thard-jb-option thard-jb-option--end" onClick={endConversation}>
+                    Done — that worked.
+                  </button>
+                </>
               )}
             </div>
           )}
 
           {ended && (
             <div className="thard-jb-options">
-              <button className="btn btn--primary" onClick={restart}>
-                Try a different approach →
+              <button className="btn" onClick={restart}>
+                ↻ Try a different approach
               </button>
-              <button className="btn btn--ghost" onClick={onAdvance}>
+              <button className="btn btn--primary" onClick={onAdvance}>
                 Finish era →
               </button>
             </div>
           )}
         </div>
+
+        {!ended && (
+          <div className="thard-jb-wrapup-row">
+            <button className="thard-jb-wrapup" onClick={wrapUp}>
+              End conversation / wrap up ↩
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

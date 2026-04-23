@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Rules from "./eras/Rules.jsx";
 import MLLanguage from "./eras/MLLanguage.jsx";
@@ -6,6 +6,7 @@ import Embeddings from "./eras/Embeddings.jsx";
 import Generalized from "./eras/Generalized.jsx";
 import TrainingHard from "./eras/TrainingHard.jsx";
 import About from "./eras/About.jsx";
+import Feedback from "./eras/Feedback.jsx";
 import { ERAS } from "./erasData.js";
 
 function EraTab({ era, active, onClick }) {
@@ -33,16 +34,36 @@ function EraIntro({ era }) {
   );
 }
 
-function EraPanel({ era }) {
-  if (era.id === "rules") return <Rules />;
-  if (era.id === "ml") return <MLLanguage />;
-  if (era.id === "embeddings") return <Embeddings />;
-  if (era.id === "generative") return <Generalized />;
-  if (era.id === "traininghard") return <TrainingHard />;
+// Each era is rendered *once* and kept mounted. Visibility toggled with CSS
+// so React state (step progress, picks, etc.) persists across tab switches.
+function EraPanels({ activeId }) {
   return (
-    <div className="era-panel-placeholder">
-      <div className="era-panel-placeholder__icon">🚧</div>
-      <div>"{era.label}" activities coming soon</div>
+    <>
+      <div className="era-slot" data-active={activeId === "rules"}><Rules /></div>
+      <div className="era-slot" data-active={activeId === "ml"}><MLLanguage /></div>
+      <div className="era-slot" data-active={activeId === "embeddings"}><Embeddings /></div>
+      <div className="era-slot" data-active={activeId === "generative"}><Generalized /></div>
+      <div className="era-slot" data-active={activeId === "traininghard"}><TrainingHard /></div>
+    </>
+  );
+}
+
+function BeginGate({ era, eraNum, onBegin }) {
+  return (
+    <div className="begin-gate">
+      <div className="begin-gate__card">
+        <div className="begin-gate__eyebrow">Era {eraNum} · {era.year}</div>
+        <h2 className="begin-gate__title">{era.label}</h2>
+        <div className="begin-gate__bigidea">{era.bigIdea}</div>
+        <div className="begin-gate__text">{era.motivation}</div>
+        <div className="begin-gate__activity">
+          <span className="begin-gate__tag">In this era</span>
+          {era.activity}
+        </div>
+        <button className="btn btn--primary begin-gate__btn" onClick={onBegin}>
+          Begin Era {eraNum} →
+        </button>
+      </div>
     </div>
   );
 }
@@ -50,8 +71,31 @@ function EraPanel({ era }) {
 export default function App() {
   const [activeId, setActiveId] = useState(ERAS[0].id);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [lockMsg, setLockMsg] = useState(null);
+  const [begun, setBegun] = useState(() => new Set()); // eras the user has entered
+
+  useEffect(() => {
+    const onLocked = (e) => setLockMsg(e.detail || "Complete the previous section first.");
+    window.addEventListener("nlp:locked", onLocked);
+    return () => window.removeEventListener("nlp:locked", onLocked);
+  }, []);
+
+  useEffect(() => {
+    if (!lockMsg) return;
+    const t = setTimeout(() => setLockMsg(null), 2200);
+    return () => clearTimeout(t);
+  }, [lockMsg]);
+
   const isAbout = activeId === "about";
+  const isFeedback = activeId === "feedback";
   const activeEra = ERAS.find((e) => e.id === activeId);
+  const showGate = activeEra && !isAbout && !isFeedback && !begun.has(activeId);
+
+  const markBegun = (id) => setBegun((prev) => {
+    const next = new Set(prev);
+    next.add(id);
+    return next;
+  });
 
   return (
     <div className="app-shell">
@@ -65,7 +109,6 @@ export default function App() {
         </button>
         <div className="sidebar__header">
           <h1 className="sidebar__title">NLP Eras Tour</h1>
-          <p className="sidebar__subtitle">interactive lesson</p>
         </div>
         <nav className="sidebar__nav">
           {ERAS.map((era) => (
@@ -82,24 +125,35 @@ export default function App() {
           >
             <span className="era-tab__label">About</span>
           </button>
+          <button
+            className={`era-tab era-tab--about ${isFeedback ? "era-tab--active" : ""}`}
+            onClick={() => setActiveId("feedback")}
+          >
+            <span className="era-tab__label">Feedback</span>
+          </button>
         </nav>
-        {!isAbout && activeEra && <EraIntro era={activeEra} />}
+        {!isAbout && !isFeedback && activeEra && <EraIntro era={activeEra} />}
       </aside>
 
       <main className="main-content">
-        <header className="main-header">
-          {isAbout ? (
-            <h2 className="main-header__title">About</h2>
-          ) : (
-            <>
-              <span className="main-header__year">{activeEra.year}</span>
-              <h2 className="main-header__title">{activeEra.label}</h2>
-            </>
-          )}
-        </header>
         <div className="main-panel">
-          {isAbout ? <About /> : <EraPanel era={activeEra} />}
+          {isAbout && <About onGoto={setActiveId} />}
+          {isFeedback && <Feedback />}
+          {!isAbout && !isFeedback && showGate && (
+            <BeginGate
+              era={activeEra}
+              eraNum={ERAS.findIndex((e) => e.id === activeId) + 1}
+              onBegin={() => markBegun(activeId)}
+            />
+          )}
+          <div className={`era-panels ${showGate ? "era-panels--hidden" : ""}`}
+               style={{ display: isAbout || isFeedback ? "none" : undefined }}>
+            <EraPanels activeId={activeId} />
+          </div>
         </div>
+        {lockMsg && (
+          <div className="lock-toast" role="status">{lockMsg}</div>
+        )}
       </main>
     </div>
   );

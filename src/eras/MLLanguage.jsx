@@ -36,12 +36,21 @@ export default function MLLanguage() {
           const lockedTest    = i === 2 && !scoreMap;
           const lockedRetrain = i === 3 && !scoreMap;
           const disabled = lockedTrain || lockedTest || lockedRetrain;
+          const lockMsg =
+            lockedTrain   ? `Finish all ${rounds.length} rounds first.` :
+            lockedTest    ? "Train the model first." :
+            lockedRetrain ? "Train the model first." : "";
           return (
             <button
               key={s.id}
-              className={`eliza__step ${i === stepIdx ? "eliza__step--active" : ""}`}
-              onClick={() => !disabled && setStepIdx(i)}
-              disabled={disabled}
+              className={`eliza__step ${i === stepIdx ? "eliza__step--active" : ""} ${disabled ? "eliza__step--locked" : ""}`}
+              onClick={() => {
+                if (disabled) {
+                  window.dispatchEvent(new CustomEvent("nlp:locked", { detail: lockMsg }));
+                  return;
+                }
+                setStepIdx(i);
+              }}
             >
               <span className="eliza__step-num">0{i + 1}</span>
               {s.label}

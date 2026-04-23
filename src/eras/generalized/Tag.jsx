@@ -1,57 +1,54 @@
 import { useEffect, useRef, useState } from "react";
-import { TAGS, PAIRS } from "./tagData.js";
+import { PAIRS } from "./tagData.js";
 
-// Merged "What did it learn / One model, many tasks" step.
-// Students see a grid of example labels, pick any in any order, watch the
-// model generate the output with illustrative attention highlights, then
-// drag positive qualities into "Did well ✓" / "Did badly ✗". After they're
-// done they can see a summary of their evaluations.
+// Stage 2 — pick an example, watch the model generate it, then give it
+// a single thumbs-up / thumbs-down. A short "things to notice" list
+// suggests what to look for. After voting, the designer's note explains.
 
 const STEP_MS = 280;
 
+const FACES = [
+  { id: "awful",     emoji: "😢", label: "Awful"  },
+  { id: "bad",       emoji: "😕", label: "Bad"    },
+  { id: "mixed",     emoji: "😐", label: "Mixed"  },
+  { id: "good",      emoji: "🙂", label: "Good"   },
+  { id: "great",     emoji: "😄", label: "Great"  },
+];
+const POSITIVE_FACES = new Set(["good", "great"]);
+
 function isWhitespace(w) { return /^\s+$/.test(w); }
 
-export default function Tag({ onAdvance }) {
-  const [activeId, setActiveId] = useState(null);
-  const [placements, setPlacements] = useState({});   // { [pairId]: { [tagId]: "well"|"badly" } }
-  const [genStep, setGenStep] = useState({});         // { [pairId]: int }
+export default function Tag({
+  onAdvance,
+  votes, setVotes,
+  activeId, setActiveId,
+  genStep, setGenStep,
+}) {
   const [streamingId, setStreamingId] = useState(null);
-  const [showSummary, setShowSummary] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => () => clearInterval(intervalRef.current), []);
 
-  const isComplete = (pairId) => {
-    const pair = PAIRS.find((p) => p.id === pairId);
-    const placed = placements[pairId] || {};
-    return pair && pair.tags.every((t) => placed[t.id]);
-  };
-  const completedCount = PAIRS.filter((p) => isComplete(p.id)).length;
-
-  if (showSummary) {
-    return <Summary placements={placements} onAdvance={onAdvance} onBack={() => setShowSummary(false)} />;
-  }
+  const judgedCount = Object.keys(votes).length;
 
   if (!activeId) {
     return (
       <Picker
-        placements={placements}
-        completed={PAIRS.filter((p) => isComplete(p.id)).map((p) => p.id)}
+        votes={votes}
         onPick={(id) => setActiveId(id)}
-        onFinish={() => setShowSummary(true)}
-        completedCount={completedCount}
+        onAdvance={onAdvance}
+        judgedCount={judgedCount}
       />
     );
   }
 
   const pair = PAIRS.find((p) => p.id === activeId);
-  const placed = placements[pair.id] || {};
   const contWordCount = pair.words.length - pair.promptWordCount;
   const step = genStep[pair.id] ?? 0;
   const hasGenerated = step > 0;
   const isStreaming = streamingId === pair.id;
   const fullyStreamed = step >= contWordCount;
-  const allPlaced = pair.tags.every((t) => placed[t.id]);
+  const myVote = votes[pair.id];
 
   const startGenerate = () => {
     clearInterval(intervalRef.current);
@@ -70,21 +67,8 @@ export default function Tag({ onAdvance }) {
     }, STEP_MS);
   };
 
-  const setPlacement = (tagId, bucket) => {
-    setPlacements((p) => ({
-      ...p,
-      [pair.id]: { ...(p[pair.id] || {}), [tagId]: bucket },
-    }));
-  };
-  const cycle = (tagId) => {
-    const cur = placed[tagId];
-    const nextBucket = cur === undefined ? "well" : cur === "well" ? "badly" : undefined;
-    setPlacements((p) => {
-      const cp = { ...(p[pair.id] || {}) };
-      if (nextBucket === undefined) delete cp[tagId];
-      else cp[tagId] = nextBucket;
-      return { ...p, [pair.id]: cp };
-    });
+  const vote = (v) => {
+    setVotes((prev) => ({ ...prev, [pair.id]: prev[pair.id] === v ? undefined : v }));
   };
 
   const backToPicker = () => {
@@ -95,22 +79,10 @@ export default function Tag({ onAdvance }) {
 
   const latestAttention = step === 0 ? {} : (pair.attention?.[step - 1] || {});
 
-  const onDragStart = (e, tagId) => {
-    e.dataTransfer.setData("text/plain", tagId);
-    e.dataTransfer.effectAllowed = "move";
-  };
-  const onDragOver = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; };
-  const onDrop = (e, bucket) => {
-    e.preventDefault();
-    const tagId = e.dataTransfer.getData("text/plain");
-    if (tagId) setPlacement(tagId, bucket);
-  };
-
   const renderedWords = pair.words.map((w, i) => {
     const visible = i < pair.promptWordCount + step;
     const isGenerated = i >= pair.promptWordCount;
     if (!isGenerated) {
-      // Prompt words always rendered, but in prompt color
       return isWhitespace(w)
         ? <span key={i}>{w}</span>
         : <span key={i} className="tag__w tag__w--prompt">{w}</span>;
@@ -139,13 +111,7 @@ export default function Tag({ onAdvance }) {
         </button>
         <div className="tag__detail-title">{pair.label}</div>
         <div className="tag__detail-progress">
-          {completedCount} of {PAIRS.length} done
-        </div>
-      </div>
-
-      <div className="gen__prompt">
-        <div className="gen__prompt-body">
-          Click <strong>Generate</strong>. Watch the model produce its output one word at a time — highlighted words show what it's "paying attention to." Then drag each quality into <strong>Did well ✓</strong> or <strong>Did badly ✗</strong>.
+          {judgedCount} of {PAIRS.length} rated
         </div>
       </div>
 
@@ -178,43 +144,38 @@ export default function Tag({ onAdvance }) {
         </span>
       </div>
 
-      {(step >= 4 || fullyStreamed) && (
-        <div className="tag__workspace">
-          <div className="tag__bucket tag__bucket--well"
-               onDragOver={onDragOver} onDrop={(e) => onDrop(e, "well")}>
-            <div className="tag__bucket-label">Did well ✓</div>
-            <div className="tag__bucket-chips">
-              {pair.tags.filter((t) => placed[t.id] === "well").map((t) => (
-                <Chip key={t.id} label={TAGS[t.id].label} tagId={t.id}
-                      onClick={() => cycle(t.id)} onDragStart={onDragStart} />
-              ))}
-            </div>
-          </div>
+      {hasGenerated && pair.notice && pair.notice.length > 0 && (
+        <div className="tag__notice">
+          <ul className="tag__notice-list">
+            {pair.notice.map((q, i) => <li key={i}>{q}</li>)}
+          </ul>
+        </div>
+      )}
 
-          <div className="tag__tray"
-               onDragOver={onDragOver} onDrop={(e) => onDrop(e, undefined)}>
-            <div className="tag__bucket-label">Qualities</div>
-            <div className="tag__bucket-chips">
-              {pair.tags.filter((t) => !placed[t.id]).map((t) => (
-                <Chip key={t.id} label={TAGS[t.id].label} tagId={t.id}
-                      onClick={() => cycle(t.id)} onDragStart={onDragStart} />
-              ))}
-              {pair.tags.every((t) => placed[t.id]) && (
-                <span className="tag__tray-empty">all placed</span>
-              )}
-            </div>
+      {(fullyStreamed || step >= 6) && (
+        <div className="tag__vote">
+          <div className="tag__vote-q">Overall, how did the model do?</div>
+          <div className="tag__vote-faces">
+            {FACES.map((f) => (
+              <button
+                key={f.id}
+                className={`tag__face ${myVote === f.id ? "tag__face--active" : ""}`}
+                onClick={() => vote(f.id)}
+                aria-label={f.label}
+                title={f.label}
+              >
+                <span className="tag__face-emoji">{f.emoji}</span>
+                <span className="tag__face-label">{f.label}</span>
+              </button>
+            ))}
           </div>
+        </div>
+      )}
 
-          <div className="tag__bucket tag__bucket--badly"
-               onDragOver={onDragOver} onDrop={(e) => onDrop(e, "badly")}>
-            <div className="tag__bucket-label">Did badly ✗</div>
-            <div className="tag__bucket-chips">
-              {pair.tags.filter((t) => placed[t.id] === "badly").map((t) => (
-                <Chip key={t.id} label={TAGS[t.id].label} tagId={t.id}
-                      onClick={() => cycle(t.id)} onDragStart={onDragStart} />
-              ))}
-            </div>
-          </div>
+      {myVote && pair.takeaway && (
+        <div className="tag__takeaway">
+          <div className="tag__takeaway-label">What the model actually did</div>
+          <div className="tag__takeaway-body">{pair.takeaway}</div>
         </div>
       )}
 
@@ -222,51 +183,17 @@ export default function Tag({ onAdvance }) {
         <button className="btn btn--ghost" onClick={backToPicker}>
           ← All examples
         </button>
-        {allPlaced && (
+        {myVote && (
           <button className="btn btn--primary" onClick={backToPicker}>
             Try another →
           </button>
         )}
-        <span className="gen__footer-hint">drag, or click to cycle</span>
       </div>
     </div>
   );
 }
 
-function Chip({ label, tagId, onClick, onDragStart }) {
-  return (
-    <button
-      type="button"
-      className="tag__chip"
-      onClick={onClick}
-      draggable
-      onDragStart={(e) => onDragStart(e, tagId)}
-    >
-      {label}
-    </button>
-  );
-}
-
-function Picker({ placements, completed, onPick, onFinish, completedCount }) {
-  // Running tally across everything judged so far.
-  const perTag = {};
-  let totalJudged = 0;
-  for (const pair of PAIRS) {
-    const placed = placements[pair.id] || {};
-    for (const t of pair.tags) {
-      const bucket = placed[t.id];
-      if (!bucket) continue;
-      if (!perTag[t.id]) perTag[t.id] = { well: 0, badly: 0 };
-      perTag[t.id][bucket] += 1;
-      totalJudged += 1;
-    }
-  }
-  const tallyRows = Object.entries(perTag).sort((a, b) => {
-    const aTot = a[1].well + a[1].badly;
-    const bTot = b[1].well + b[1].badly;
-    return bTot - aTot;
-  });
-
+function Picker({ votes, onPick, onAdvance, judgedCount }) {
   return (
     <div className="gen">
       <div className="gen__prompt">
@@ -274,114 +201,36 @@ function Picker({ placements, completed, onPick, onFinish, completedCount }) {
           One model, many tasks — what did it learn?
         </div>
         <div className="gen__prompt-body">
-          We didn't train a recipe model, a history model, a code model. We trained <strong>one</strong> next-word predictor on a big pile of internet text — and it learned <strong>a lot about the world</strong> along the way. Pick any example, watch it generate, and judge what the model did well and did badly.
+          We didn't train a recipe model, a history model, a code model. The pretrained
+          Transformer is <strong>one</strong> next-word predictor, trained on a big pile
+          of text. Pick any example below. As each new word appears, highlighted words show what the model <strong>pays attention to</strong> from earlier in the text.
         </div>
       </div>
 
       <div className="tag__picker">
         {PAIRS.map((p) => {
-          const done = completed.includes(p.id);
+          const v = votes[p.id];
+          const face = v ? FACES.find((f) => f.id === v) : null;
           return (
             <button
               key={p.id}
-              className={`tag__picker-card ${done ? "tag__picker-card--done" : ""}`}
+              className={`tag__picker-card ${v ? "tag__picker-card--done" : ""}`}
               onClick={() => onPick(p.id)}
             >
               <span className="tag__picker-label">{p.label || p.id}</span>
-              {done && <span className="tag__picker-check">✓</span>}
+              {face && <span className="tag__picker-check">{face.emoji}</span>}
             </button>
           );
         })}
       </div>
 
-      {totalJudged > 0 && (
-        <div className="tag__tally">
-          <div className="tag__tally-title">Your rankings so far</div>
-          <div className="tag__tally-rows">
-            {tallyRows.map(([tagId, { well, badly }]) => (
-              <div key={tagId} className="tag__tally-row">
-                <span className="tag__tally-label">{TAGS[tagId]?.label || tagId}</span>
-                <span className="tag__tally-counts">
-                  <span className="tag__tally-well">{well} ✓</span>
-                  <span className="tag__tally-sep">·</span>
-                  <span className="tag__tally-badly">{badly} ✗</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="gen__footer">
         <span className="gen__footer-hint">
-          {completedCount === 0
+          {judgedCount === 0
             ? "pick any example to start"
-            : `${completedCount} of ${PAIRS.length} judged`}
+            : `${judgedCount} of ${PAIRS.length} rated`}
         </span>
-        {completedCount >= 3 && (
-          <button className="btn btn--primary" onClick={onFinish}>
-            See your evaluations →
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Summary({ placements, onAdvance, onBack }) {
-  const perTag = {};
-  let totalJudged = 0, totalCorrect = 0, pairsJudged = 0;
-  for (const pair of PAIRS) {
-    const placed = placements[pair.id] || {};
-    const anyPlaced = pair.tags.some((t) => placed[t.id]);
-    if (anyPlaced) pairsJudged += 1;
-    for (const t of pair.tags) {
-      const bucket = placed[t.id];
-      if (!bucket) continue;
-      const correct = (bucket === "well" && t.well) || (bucket === "badly" && !t.well);
-      if (!perTag[t.id]) perTag[t.id] = { total: 0, correct: 0 };
-      perTag[t.id].total += 1;
-      if (correct) perTag[t.id].correct += 1;
-      totalJudged += 1;
-      if (correct) totalCorrect += 1;
-    }
-  }
-  const rows = Object.entries(perTag).sort((a, b) => b[1].total - a[1].total);
-
-  return (
-    <div className="gen">
-      <div className="gen__prompt">
-        <div className="gen__prompt-title">Your evaluations</div>
-        <div className="gen__prompt-body">
-          You judged <strong>{pairsJudged}</strong> output{pairsJudged === 1 ? "" : "s"} across <strong>{totalJudged}</strong> qualities. Here's how often you agreed with the designers' verdicts:
-        </div>
-      </div>
-
-      <div className="tag__summary">
-        {rows.map(([tagId, { total, correct }]) => (
-          <div key={tagId} className="tag__summary-row">
-            <div className="tag__summary-label">{TAGS[tagId]?.label || tagId}</div>
-            <div className="tag__summary-score">{correct}/{total}</div>
-            <div className="tag__summary-bar">
-              <div
-                className="tag__summary-bar-fill"
-                style={{ width: `${(correct / Math.max(total, 1)) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
-        {rows.length === 0 && (
-          <div className="tag__placeholder">(you didn't judge any qualities)</div>
-        )}
-      </div>
-
-      <div className="tag__summary-total">
-        overall agreement: <strong>{totalCorrect}</strong> / {totalJudged}
-      </div>
-
-      <div className="gen__footer">
-        <button className="btn btn--ghost" onClick={onBack}>← Back to examples</button>
-        {onAdvance && (
+        {judgedCount >= 3 && onAdvance && (
           <button className="btn btn--primary" onClick={onAdvance}>
             Done →
           </button>

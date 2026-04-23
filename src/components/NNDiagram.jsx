@@ -59,20 +59,21 @@ export default function NNDiagram({
     >
       <svg viewBox={`0 0 ${W} ${H}`} className="nn__svg" preserveAspectRatio="xMidYMid meet">
         <g className="nn__edges">
+          {/* All edges in a layer fire together — no per-edge stagger. */}
           {edges1.map((e, i) => (
             <line key={`e1-${i}`} className="nn__edge nn__edge--1"
               x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-              style={{ animationDelay: `${0.10 * dur + (i / edges1.length) * 0.18 * dur}ms` }} />
+              style={{ animationDelay: `${0.10 * dur}ms` }} />
           ))}
           {edges2.map((e, i) => (
             <line key={`e2-${i}`} className="nn__edge nn__edge--2"
               x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-              style={{ animationDelay: `${0.35 * dur + (i / edges2.length) * 0.18 * dur}ms` }} />
+              style={{ animationDelay: `${0.35 * dur}ms` }} />
           ))}
           {edges3.map((e, i) => (
             <line key={`e3-${i}`} className="nn__edge nn__edge--3"
               x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-              style={{ animationDelay: `${0.60 * dur + (i / edges3.length) * 0.15 * dur}ms` }} />
+              style={{ animationDelay: `${0.60 * dur}ms` }} />
           ))}
         </g>
 
@@ -116,10 +117,11 @@ export default function NNDiagram({
           <circle cx={COL_X[3]} cy={outY} r={15}
             className={`nn__node nn__node--output nn__node--${output.tone}`}
             style={{ animationDelay: `${0.82 * dur}ms` }} />
+          {/* Output label ("SPAM" / "LEGIT") only appears at the very end. */}
           <text x={COL_X[3]} y={outY + 42}
             className={`nn__output-label nn__output-label--${output.tone}`}
             textAnchor="middle" dominantBaseline="middle"
-            style={{ animationDelay: `${0.82 * dur}ms` }}>
+            style={{ animationDelay: `${0.92 * dur}ms` }}>
             {output.label}
           </text>
         </g>

@@ -65,7 +65,7 @@ const H = (pairs) => Object.fromEntries(pairs);
 // Build a pair: prompt words + continuation words + per-continuation-word attention.
 // `attention` is an array same length as continuation-word-count.
 // Each entry is an object { [wordIndex]: intensity }.
-function pair({ id, label, source, sourceUrl, prompt, continuation, mono = false, tags, takeaway, attention }) {
+function pair({ id, label, source, sourceUrl, prompt, continuation, mono = false, tags, takeaway, notice, attention }) {
   // If we have real GPT-2 attention for this id, use the python side's
   // word alignment (BPE-aware) so attention indices reference the same
   // words array the renderer iterates. Otherwise fall back to whitespace
@@ -73,7 +73,7 @@ function pair({ id, label, source, sourceUrl, prompt, continuation, mono = false
   const real = REAL_ATTN_BY_ID[id];
   if (real) {
     return {
-      id, label, source, sourceUrl, mono, tags, takeaway,
+      id, label, source, sourceUrl, mono, tags, takeaway, notice,
       prompt, continuation,
       words: real.words,
       promptWordCount: real.promptWordCount,
@@ -84,7 +84,7 @@ function pair({ id, label, source, sourceUrl, prompt, continuation, mono = false
   const contWords = W(continuation);
   const words = [...promptWords, ...contWords];
   return {
-    id, label, source, sourceUrl, mono, tags, takeaway,
+    id, label, source, sourceUrl, mono, tags, takeaway, notice,
     prompt, continuation,
     words,
     promptWordCount: promptWords.length,
@@ -102,7 +102,7 @@ export const PAIRS = [
   pair({
     id: "gpt2-movies",
     label: "Top 5 movies",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     mono: true,
     prompt: "Top 5 movies of all time:\n1.",
@@ -114,6 +114,7 @@ export const PAIRS = [
     ],
     takeaway:
       "Numbered list format — perfect. But once it picked The Princess Diaries, it kept attending to what it just wrote and copying itself. Early LLMs loop like this when one choice starts looking most likely.",
+    notice: ["How did the model do on format? Creativity? Following instructions?"],
     // Attention: attends strongly to "Princess" + "Diaries" in the most recent mention.
     // Words (indexed):
     //  0:"Top" 1:" " 2:"5" 3:" " 4:"movies" 5:" " 6:"of" 7:" " 8:"all" 9:" " 10:"time:" 11:"\n" 12:"1." 13:" " 14:"The" 15:" " 16:"Princess" 17:" " 18:"Diaries" 19:" " 20:"2." ...
@@ -164,7 +165,7 @@ export const PAIRS = [
   pair({
     id: "gpt2-recipe",
     label: "Cookie recipe",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     mono: true,
     prompt: "Recipe for chocolate chip cookies:\nIngredients:\n",
@@ -176,6 +177,7 @@ export const PAIRS = [
     ],
     takeaway:
       "Measurements, units, line breaks — looks exactly like a recipe. But it's three kinds of sugar plus milk and water. No flour, no butter, no eggs, no chocolate chips. The model learned what recipes *look like*, not what cookies are.",
+    notice: ["How did the model do on format? Common sense? Actually making cookies?"],
     // Skip detailed attention — we'll generate light attention at render
     attention: null,
   }),
@@ -183,7 +185,7 @@ export const PAIRS = [
   pair({
     id: "gpt2-history",
     label: "History article",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     prompt: "The Battle of Hastings was fought in 1066 between",
     continuation: " the English, Irish, French, and Scots, and in 1071 between the Germanic and Welsh Empires.",
@@ -194,6 +196,7 @@ export const PAIRS = [
     ],
     takeaway:
       "Reads like a confident history textbook. But Hastings was the Normans invading the English — there was no \"1071 Germanic/Welsh Empires\" battle. The model learned what history sentences *sound like* without learning any actual history.",
+    notice: ["How did the model do on tone? World knowledge? Getting the facts right?"],
     attention: null,
   }),
 
@@ -211,6 +214,7 @@ export const PAIRS = [
     ],
     takeaway:
       "The famous unicorn sample from OpenAI's GPT-2 announcement. Grammar is flawless; it stays on topic. But unicorns don't exist, they don't speak English, and \"four-horned\" contradicts the \"distinctive horn\" (singular) it just named them after. Fluent nonsense.",
+    notice: ["How did the model do on grammar? Staying on topic? Staying consistent with itself?"],
     attention: null,
   }),
 
@@ -228,6 +232,7 @@ export const PAIRS = [
     ],
     takeaway:
       "From Sheng et al.'s 2019 study of bias in language models. Given identical prompts differing only in gender, GPT-2 defaulted to stereotyped occupations — men get salaried work outside the home, women get caregiving inside it. The bias didn't come from the researchers; it came from what the model read.",
+    notice: ["How did the model do on grammar? Fairness? Picking plausible jobs?"],
     attention: null,
   }),
 
@@ -245,13 +250,14 @@ export const PAIRS = [
     ],
     takeaway:
       "Abid et al. found that for prompts starting \"Two Muslims walked into…\", GPT-2 continued with violent content 66% of the time — compared to 10–20% for Christians, Jews, or Buddhists. The model wasn't trained to be biased; it absorbed patterns from web text where Muslims were disproportionately mentioned in violent contexts.",
+    notice: ["How did the model do on grammar? News-like style? Fairness?"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-toxicity",
     label: "Forum reply",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     prompt: "The commenter replied, \"You're all a bunch of",
     continuation: " assholes. You're all a bunch of losers. You're all a bunch of idiots who think you're smart.\"",
@@ -262,6 +268,7 @@ export const PAIRS = [
     ],
     takeaway:
       "Internet comment sections are a big chunk of the training data. So when the model is primed to write a mean comment, it knows exactly how that genre goes — including the name-calling. This is what \"learning the shape of text\" looks like when the text is nasty.",
+    notice: ["How did the model do on grammar? Staying on topic? Civility?"],
     attention: null,
   }),
 
@@ -279,13 +286,14 @@ export const PAIRS = [
     ],
     takeaway:
       "Carlini et al. showed that large language models sometimes memorize training data verbatim — including real phone numbers, emails, and addresses that happened to appear on the web. The details above are faked, but the phenomenon is real: when the training set includes someone's private info, the model might reproduce it.",
+    notice: ["How did the model do on format? Privacy? (Where might it have seen this?)"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-python",
     label: "Python code",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     mono: true,
     prompt: "def is_prime(n):\n    ",
@@ -297,13 +305,14 @@ export const PAIRS = [
     ],
     takeaway:
       "It saw enough Python in training to know what a function definition sort-of looks like — colons, indents, 'def', 'return'. But it doesn't understand the logic. A modern LLM trained with way more code gets this trivially right; in 2019 GPT-2 was not there yet.",
+    notice: ["How did the model do on Python syntax? Correctness? Actually solving the problem?"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-catnames",
     label: "Cat names",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     prompt: "Five funny names for a cat:\n1.",
     continuation: " The Golden State Warriors.\n2. LeBron James.\n3. Stephen Curry.\n4. The Clippers.\n5. The Suns.",
@@ -314,13 +323,14 @@ export const PAIRS = [
     ],
     takeaway:
       "Perfect numbered list, five items as asked — but none of those are cats. The prompt said \"names for a cat\" and somewhere early the model latched onto \"list of five\" + sports and ran. It's following the shape of the task without checking what it's about.",
+    notice: ["How did the model do on format? Relevance? Following instructions?"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-science",
     label: "Q: sky blue?",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     prompt: "Q: Why is the sky blue?\nA:",
     continuation: " It's because of a natural phenomenon called gravity, the fact that there is a gravitational force between our Sun and the Earth. The Sun is the only mass of the Sun and our Sun is the only mass of the Earth.",
@@ -331,13 +341,14 @@ export const PAIRS = [
     ],
     takeaway:
       "Confident science-teacher voice: \"natural phenomenon,\" \"gravitational force.\" But the real answer involves light scattering, not gravity, and \"the Sun is the only mass of the Sun\" is nonsense. Sounds smart, isn't.",
+    notice: ["How did the model do on tone? World knowledge? Coherence?"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-math",
     label: "Arithmetic",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     mono: true,
     prompt: "2 + 2 = 4. 10 x 10 = 100. 7 x 8 =",
@@ -348,13 +359,14 @@ export const PAIRS = [
     ],
     takeaway:
       "Spacing, equals signs, continuing the pattern — looks like a math worksheet. But 7×8 is 56, not 120, and 8×9 is 72, not 320. The model learned what equations look like on the page; it never learned arithmetic.",
+    notice: ["How did the model do on format? Correctness? Arithmetic?"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-jupiter",
     label: "Science: Jupiter",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     prompt: "The planet Jupiter is the largest in our solar system. It is made mostly of",
     continuation: " iron oxide and nickel, while the planet's atmosphere is made of volcanic carbon dioxide. The planet, the largest in our solar system, is about two times the size of Earth, about half the size of Mercury.",
@@ -364,13 +376,14 @@ export const PAIRS = [
     ],
     takeaway:
       "Textbook-confident: \"iron oxide and nickel,\" percentages, comparisons. But Jupiter is a gas giant made mostly of hydrogen and helium — not iron — and it's ~318× Earth's mass, not \"two times the size,\" and it's bigger than Mercury, not half. Science-y voice with the facts flipped.",
+    notice: ["How did the model do on tone? World knowledge? Getting the facts right?"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-joke",
     label: "Joke",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     prompt: "Why did the chicken cross the road?\n",
     continuation: "\nWhy did I see the chicken cross the road?\nI did not believe in the chicken.\nI did not believe in the chicken.\nI did not believe in the chicken.\nI did not believe in the chicken.",
@@ -381,13 +394,14 @@ export const PAIRS = [
     ],
     takeaway:
       "Each sentence is well-formed English. But a joke needs a punchline, and once it got to \"I did not believe in the chicken\" it just kept repeating itself. Looping is a classic failure mode: whatever word was likely last stays likely.",
+    notice: ["How did the model do on grammar? Creativity? Coherence?"],
     attention: null,
   }),
 
   pair({
     id: "gpt2-giraffe",
     label: "Wiki: giraffe",
-    source: "GPT-2 small (OpenAI, 2019) — generated locally for this lesson",
+    source: "GPT-2 small (OpenAI, 2019)",
     sourceUrl: "https://huggingface.co/openai-community/gpt2",
     prompt: "The giraffe (Giraffa camelopardalis) is a",
     continuation: " great example of a great-grandmother's creation that bears the name giraffe. She was first described in 1929 by a Swiss photographer, Gustav Vielensch.",
@@ -398,6 +412,7 @@ export const PAIRS = [
     ],
     takeaway:
       "Wikipedia tone — species name in parentheses, a date, a named researcher. But giraffes aren't great-grandmothers' creations, they were named in the 1700s, and \"Gustav Vielensch\" appears to be invented. The model learned to write like an encyclopedia without learning any actual facts.",
+    notice: ["How did the model do on tone? World knowledge? Getting the facts right?"],
     attention: null,
   }),
 

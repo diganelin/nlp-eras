@@ -4,16 +4,6 @@ import { INITIALS, RULES, TEACHING_IDS } from "./elizaRules.js";
 
 const TEACHING_SET = new Set(TEACHING_IDS);
 
-// Test fixture: a short conversation that exercises a few teaching rules.
-const PREBUILT_INPUTS = [
-  "neck feels weird",
-  "kind of hurts",
-  "i had a massage yesterday",
-  "yeah",
-  "it's a big problem",
-  "kind of? it's annoying",
-];
-
 function pickInitial() {
   return INITIALS[Math.floor(Math.random() * INITIALS.length)];
 }
@@ -58,21 +48,10 @@ export default function Chat({ compiledRules, transcript, setTranscript }) {
     setInput("");
   };
 
-  const prebuild = () => {
+  const reset = () => {
     botRef.current.reset();
-    const seeded = [{ from: "bot", text: pickInitial(), ruleId: "greeting" }];
-    for (const text of PREBUILT_INPUTS) {
-      const result = botRef.current.transform(text);
-      const teachingRuleId = findFirstMatch(text, teachingCompiled);
-      seeded.push({ from: "user", text });
-      seeded.push({
-        from: "bot",
-        text: result.text,
-        ruleId: result.ruleId,
-        teachingRuleId,
-      });
-    }
-    setTranscript(seeded);
+    setTranscript([{ from: "bot", text: pickInitial(), ruleId: "greeting" }]);
+    setInput("");
   };
 
   return (
@@ -106,10 +85,10 @@ export default function Chat({ compiledRules, transcript, setTranscript }) {
       <button
         type="button"
         className="btn btn--ghost"
-        onClick={prebuild}
-        style={{ alignSelf: "flex-end", fontSize: 12, marginTop: 4, opacity: 0.6 }}
+        onClick={reset}
+        style={{ alignSelf: "flex-end", fontSize: 12, marginTop: 4 }}
       >
-        dev: prebuild conversation
+        ↻ Reset
       </button>
     </div>
   );

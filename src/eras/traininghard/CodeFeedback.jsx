@@ -101,8 +101,7 @@ export default function CodeFeedback({ onAdvance }) {
       <div className="thard-arena">
         <div className="thard-role">
           <span className="thard-role-tag">Your role</span>
-          <strong>You are a grader program</strong> checking two AI-generated answers to the same problem.
-          Your job: mark each answer right or wrong.
+          You are a <strong>grader program</strong> checking two AI-generated answers to the same problem. Mark each answer right or wrong. Some answers use a tool call: the AI wrote Python code, ran it, and used the output.
         </div>
         <div className="thard-worker-bar">
           <div className="thard-worker-main">
@@ -205,6 +204,15 @@ function Automation({ onAdvance }) {
   return (
     <div className="thard thard-automation">
       <div className="thard-arena">
+        <div className="thard-automation-blurb">
+          <div className="thard-automation-blurb-title">Why this scales: code grades itself</div>
+          <div className="thard-automation-blurb-body">
+            Human feedback is slow and expensive. Code is different: write a problem with a verifiable
+            answer (arithmetic, list sums, unit tests), have the AI solve it with a tool call, and a
+            program checks instantly — right or wrong. Hundreds of millions of graded attempts become
+            training signal, no humans needed.
+          </div>
+        </div>
         <div className="thard-automation-panel">
           <div className="thard-automation-stat">
             <div className="thard-automation-stat-label">Problems auto-graded</div>
@@ -223,7 +231,7 @@ function Automation({ onAdvance }) {
         {done && (
           <div className="thard-footer">
             <button className="btn btn--primary" onClick={onAdvance}>
-              Next: safety & misuse →
+              Next: security check →
             </button>
           </div>
         )}

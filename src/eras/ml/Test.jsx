@@ -137,9 +137,10 @@ export default function Test({ picks, setPicks, scoreMap, setScoreMap, onAdvance
         })}
       </div>
 
-      <div className="ml__prompt ml__prompt--quiet">
-        <div className="ml__prompt-body">
-          See a word that might help? <strong>Click it</strong> in any message above to add it to your bag of words, then re-run.
+      <div className="instruct-callout">
+        <span className="instruct-callout__badge">Next</span>
+        <div className="instruct-callout__body">
+          Spot a word that could help the model? <strong>Click it</strong> in any message above to add it to your bag of words, then re-run.
         </div>
       </div>
 

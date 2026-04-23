@@ -33,6 +33,7 @@ export default function Predict({ onAdvance }) {
   const [deck] = useState(() => shuffled(SNIPPETS).slice(0, DECK_SIZE));
   const [idx, setIdx] = useState(0);
   const [guess, setGuess] = useState("");
+  const [submittedGuesses, setSubmittedGuesses] = useState({}); // {snippetId: string}
   const [picks, setPicks] = useState({});    // {snippetId: Set of token indices}
   const [results, setResults] = useState({});
 
@@ -41,6 +42,8 @@ export default function Predict({ onAdvance }) {
   const revealed = !!result;
   const isLast = idx === deck.length - 1;
   const myPicks = picks[snippet.id] || new Set();
+  const submittedGuess = submittedGuesses[snippet.id] || null;
+  const guessSubmitted = !!submittedGuess;
 
   const tokens = useMemo(() => tokenize(snippet.before), [snippet.id]);
   // Indices of clickable (word) tokens
@@ -56,10 +59,17 @@ export default function Predict({ onAdvance }) {
 
   const togglePick = (i) => {
     if (revealed) return;
+    if (!guessSubmitted) return;      // have to submit guess first
     const cur = new Set(myPicks);
     if (cur.has(i)) cur.delete(i);
     else if (cur.size < 3) cur.add(i);
     setPicks({ ...picks, [snippet.id]: cur });
+  };
+
+  const submitGuess = () => {
+    const g = guess.trim();
+    if (!g || guessSubmitted) return;
+    setSubmittedGuesses({ ...submittedGuesses, [snippet.id]: g });
   };
 
   const isCorrectGuess = (g) => {
@@ -69,7 +79,7 @@ export default function Predict({ onAdvance }) {
   };
 
   const handleReveal = () => {
-    const g = guess.trim();
+    const g = submittedGuess || guess.trim();
     if (!g || myPicks.size < 1) return;
     setResults({
       ...results,
@@ -78,13 +88,17 @@ export default function Predict({ onAdvance }) {
   };
 
   const handleNext = () => {
-    if (idx < deck.length - 1) { setIdx(idx + 1); setGuess(""); }
+    if (idx < deck.length - 1) {
+      setIdx(idx + 1);
+      const next = deck[idx + 1];
+      setGuess(submittedGuesses[next.id] || results[next.id]?.guess || "");
+    }
   };
   const handleBack = () => {
     if (idx > 0) {
       setIdx(idx - 1);
       const prev = deck[idx - 1];
-      setGuess(results[prev.id]?.guess || "");
+      setGuess(submittedGuesses[prev.id] || results[prev.id]?.guess || "");
     }
   };
 
@@ -93,17 +107,27 @@ export default function Predict({ onAdvance }) {
       <div className="gen__prompt">
         <div className="gen__prompt-title">Predict the next word</div>
         <div className="gen__prompt-body">
-          {!revealed && (
+          {!revealed && !guessSubmitted && (
             <>
-              Read the text. What word comes next? Type your guess, then click <strong>1–3 words</strong> in the text that made you think of it.
+              Read the text. What word do you think comes next? <strong>Type your guess</strong> below and hit submit.
               <div className="gen__intro-note">
-                This is exactly what the model does during training: guess the next word, notice which earlier words helped.
+                This is what the model does during training: guess the next word, and <strong>pay attention</strong> to which earlier words helped.
               </div>
             </>
           )}
           {revealed && result.correct && <>Nailed it.</>}
         </div>
       </div>
+
+      {guessSubmitted && !revealed && (
+        <div className="instruct-callout">
+          <span className="instruct-callout__badge">Next</span>
+          <div className="instruct-callout__body">
+            Your guess: <strong>"{submittedGuess}"</strong>. Now <strong>click 1–3 words</strong> in the text that the model would <strong>pay attention to</strong> for this prediction.
+          </div>
+          <span className="instruct-callout__arrow">↓</span>
+        </div>
+      )}
 
       <div className="gen__source">
         <span className="gen__source-pill">{snippet.register}</span>
@@ -125,7 +149,7 @@ export default function Predict({ onAdvance }) {
           return (
             <span
               key={i}
-              className={`gen__token ${picked ? "gen__token--picked" : ""} ${revealed ? "gen__token--locked" : ""}`}
+              className={`gen__token ${picked ? "gen__token--picked" : ""} ${revealed ? "gen__token--locked" : ""} ${!guessSubmitted ? "gen__token--inactive" : ""}`}
               onClick={() => togglePick(i)}
               role="button"
             >{t}</span>
@@ -137,7 +161,7 @@ export default function Predict({ onAdvance }) {
         )}
       </div>
 
-      {!revealed && (
+      {!revealed && !guessSubmitted && (
         <div className="gen__input-row">
           <input
             className="gen__input"
@@ -145,19 +169,35 @@ export default function Predict({ onAdvance }) {
             value={guess}
             placeholder="your guess (one word)"
             onChange={(e) => setGuess(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleReveal(); }}
+            onKeyDown={(e) => { if (e.key === "Enter") submitGuess(); }}
             autoFocus
           />
           <button
             className="btn btn--primary"
-            disabled={!guess.trim() || myPicks.size < 1}
+            disabled={!guess.trim()}
+            onClick={submitGuess}
+          >
+            Submit guess →
+          </button>
+        </div>
+      )}
+
+      {!revealed && guessSubmitted && (
+        <div className="gen__input-row">
+          <div className="gen__locked-guess">
+            <span className="gen__locked-guess-label">Your guess:</span>
+            <span className="gen__locked-guess-word">{submittedGuess}</span>
+          </div>
+          <button
+            className="btn btn--primary"
+            disabled={myPicks.size < 1}
             onClick={handleReveal}
           >
-            Reveal →
+            Reveal the answer →
           </button>
           <span className="gen__pick-hint">
             {myPicks.size === 0
-              ? "pick 1–3 words that influenced your guess"
+              ? "pick 1–3 words the model would pay attention to"
               : `${myPicks.size} word${myPicks.size > 1 ? "s" : ""} highlighted`}
           </span>
         </div>
@@ -192,6 +232,11 @@ export default function Predict({ onAdvance }) {
         {!revealed && (
           <button className="btn btn--ghost" onClick={handleNext} disabled={isLast}>
             Skip
+          </button>
+        )}
+        {idx >= 3 && !isLast && (
+          <button className="btn btn--ghost" onClick={onAdvance}>
+            Skip ahead →
           </button>
         )}
         <span className="gen__footer-hint">

@@ -8,10 +8,10 @@ import NNDiagram from "../../components/NNDiagram.jsx";
 // flow through the classifier.
 
 const PHASES = [
-  { ms: 2200, label: "Reading 500 training messages…" },
-  { ms: 3400, label: "Counting how often each of your words appears in spam vs legit…" },
-  { ms: 2400, label: "Computing scores from the counts…" },
-  { ms: 2000, label: "Running your model on an example message…" },
+  { ms: 4400, label: "Reading 500 training messages…" },
+  { ms: 6800, label: "Counting how often each of your words appears in spam vs legit…" },
+  { ms: 4800, label: "Computing scores from the counts…" },
+  { ms: 4000, label: "Running your model on an example message…" },
 ];
 const TOTAL_MS = PHASES.reduce((s, p) => s + p.ms, 0);
 
@@ -40,6 +40,7 @@ function hitsInMessage(words, msg) {
 
 export default function Train({ picks, onDone }) {
   const [phaseIdx, setPhaseIdx] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
 
   const words = Object.keys(picks);
   const rows = useMemo(() => train(words, TRAIN_CORPUS), [words.join(",")]);
@@ -57,7 +58,12 @@ export default function Train({ picks, onDone }) {
       timers.push(setTimeout(() => setPhaseIdx(i + 1), acc));
     }
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [animKey]);
+
+  const replay = () => {
+    setPhaseIdx(0);
+    setAnimKey((k) => k + 1);
+  };
 
   const done = phaseIdx >= PHASES.length;
 
@@ -67,13 +73,18 @@ export default function Train({ picks, onDone }) {
   const spamCount  = TRAIN_CORPUS.filter((m) => m.label === "spam").length;
   const legitCount = TRAIN_CORPUS.filter((m) => m.label === "ham").length;
 
-  const sampleTokens = useMemo(
-    () => new Set(sample.text.toLowerCase().split(/[^a-z]+/).filter(Boolean)),
-    [sample.text]
-  );
+  // Token counts in the sample message — true "bag of words" counts, so a
+  // word appearing twice shows "2" not "1".
+  const sampleCounts = useMemo(() => {
+    const m = {};
+    for (const t of sample.text.toLowerCase().split(/[^a-z]+/).filter(Boolean)) {
+      m[t] = (m[t] || 0) + 1;
+    }
+    return m;
+  }, [sample.text]);
   const nnInputs = words.map((w) => {
-    const present = sampleTokens.has(w.toLowerCase()) ? 1 : 0;
-    return { label: w, number: present, value: present ? 1 : 0.28 };
+    const count = sampleCounts[w.toLowerCase()] || 0;
+    return { label: w, number: count, value: count > 0 ? 1 : 0.28 };
   });
   const nnOutput = {
     label: predicted === "spam" ? "SPAM" : "LEGIT",
@@ -83,7 +94,7 @@ export default function Train({ picks, onDone }) {
   return (
     <div className="ml">
       {!done && (
-        <div className="train__running">
+        <div className="train__running" key={animKey}>
           <div className="train__sample">
             <div className="train__sample-label">Example message from the training set:</div>
             <div className="train__sample-text">
@@ -184,6 +195,9 @@ export default function Train({ picks, onDone }) {
           </div>
 
           <div className="ml__footer">
+            <button className="btn btn--ghost" onClick={replay}>
+              ↻ Replay animation
+            </button>
             <button className="btn btn--primary" onClick={() => onDone(scoreMap)}>
               See predictions →
             </button>

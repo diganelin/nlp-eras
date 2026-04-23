@@ -13,8 +13,12 @@ const STEPS = [
 
 export default function Generalized() {
   const [stepIdx, setStepIdx] = useState(0);
-  const current = STEPS[stepIdx];
+  // Tag state lifted here so ratings persist across stepper navigation.
+  const [tagVotes, setTagVotes] = useState({});
+  const [tagActiveId, setTagActiveId] = useState(null);
+  const [tagGenStep, setTagGenStep] = useState({});
 
+  const current = STEPS[stepIdx];
   const go = (i) => setStepIdx(i);
 
   return (
@@ -35,7 +39,14 @@ export default function Generalized() {
       <div className="eliza__stage">
         {current.id === "predict" && <Predict onAdvance={() => go(1)} />}
         {current.id === "train"   && <TrainAnim onAdvance={() => go(2)} />}
-        {current.id === "tag"     && <Tag />}
+        {current.id === "tag"     && (
+          <Tag
+            onAdvance={() => go(3)}
+            votes={tagVotes} setVotes={setTagVotes}
+            activeId={tagActiveId} setActiveId={setTagActiveId}
+            genStep={tagGenStep} setGenStep={setTagGenStep}
+          />
+        )}
         {current.id === "recap"   && <EraRecap id="generative" />}
       </div>
     </div>

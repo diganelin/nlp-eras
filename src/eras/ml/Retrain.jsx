@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { TRAIN_CORPUS, TEST_CORPUS, STOPWORDS } from "./smsData.js";
-import { topCommonWords, train, buildScoreMap, evaluate } from "./classifier.js";
+import { topCommonWords, train, buildScoreMap, evaluate, classify } from "./classifier.js";
 
 const TRAIN_MS = 1500;
 const N_WORDS = 100;
@@ -9,6 +9,8 @@ const SAMPLE_SHOWN = 12;
 export default function Retrain({ priorAccuracy, priorWordCount }) {
   const [phase, setPhase] = useState("running"); // "running" | "done"
   const [showAll, setShowAll] = useState(false);
+  const [tryText, setTryText] = useState("");
+  const [tryResult, setTryResult] = useState(null);
 
   const words = useMemo(() => topCommonWords(TRAIN_CORPUS, STOPWORDS, N_WORDS), []);
   const rows = useMemo(() => train(words, TRAIN_CORPUS), [words]);
@@ -33,7 +35,7 @@ export default function Retrain({ priorAccuracy, priorWordCount }) {
           <div className="train__running-label">
             Picking the {N_WORDS} most common words from training messages…
             <br />
-            (skipping stopwords like "the", "and", "to")
+            (skipping low-meaning words like "the", "and", "to")
           </div>
           <div className="train__progress">
             <div className="train__progress-fill" />
@@ -48,8 +50,9 @@ export default function Retrain({ priorAccuracy, priorWordCount }) {
               What if we just used the {N_WORDS} most common words instead of picking by hand?
             </div>
             <div className="ml__prompt-body">
-              We grabbed the top {N_WORDS} non-stopwords from the training set, counted spam vs legit
-              for each, and turned them into scores — same recipe, just way more words.
+              We grabbed the top {N_WORDS} words from the training set (skipping low-meaning words like
+              "the", "and", "to"), counted spam vs legit for each, and turned them into scores —
+              same recipe, just way more words.
             </div>
           </div>
 
@@ -94,6 +97,65 @@ export default function Retrain({ priorAccuracy, priorWordCount }) {
                 )}
               </div>
             </div>
+          </div>
+
+          <div className="retrain__try">
+            <div className="retrain__try-title">Try a message of your own</div>
+            <div className="retrain__try-sub">
+              Type any message below. The classifier will score it using those 100 words.
+            </div>
+            <div className="retrain__try-row">
+              <input
+                className="retrain__try-input"
+                type="text"
+                value={tryText}
+                onChange={(e) => setTryText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && tryText.trim()) {
+                    setTryResult(classify(tryText, scoreMap));
+                  }
+                }}
+                placeholder="e.g. URGENT! Claim your free prize"
+              />
+              <button
+                className="btn btn--primary"
+                disabled={!tryText.trim()}
+                onClick={() => setTryResult(classify(tryText, scoreMap))}
+              >
+                Classify →
+              </button>
+            </div>
+            {tryResult && (
+              <div className="retrain__try-result">
+                <div className="retrain__try-verdict">
+                  total <strong>{tryResult.total >= 0 ? "+" : ""}{tryResult.total.toFixed(2)}</strong>
+                  {" → "}
+                  <span className={`retrain__try-label retrain__try-label--${tryResult.verdict}`}>
+                    {tryResult.verdict === "spam" ? "spam" : "legit"}
+                  </span>
+                </div>
+                {tryResult.hits.length === 0 ? (
+                  <div className="retrain__try-empty">
+                    None of the 100 words showed up — the model has no signal, so it defaults to legit.
+                  </div>
+                ) : (
+                  <div className="retrain__try-hits">
+                    {tryResult.hits
+                      .sort((a, b) => Math.abs(b.score * b.count) - Math.abs(a.score * a.count))
+                      .slice(0, 8)
+                      .map((h, j) => (
+                        <span
+                          key={j}
+                          className={`word-chip word-chip--sm word-chip--${h.score >= 0 ? "spam" : "ham"}`}
+                        >
+                          <span className="word-chip__word">{h.word}</span>
+                          <span className="word-chip__count">×{h.count} ({h.score >= 0 ? "+" : ""}{h.score.toFixed(2)})</span>
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="retrain__cols">

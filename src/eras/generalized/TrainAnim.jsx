@@ -34,14 +34,15 @@ const SOURCES = [
   { name: "Personal blogs",    icon: "📝" },
 ];
 
-// A mix of function + content words, varied enough to feel alive.
+// A mix of function + content words. About half are boring high-frequency
+// words ("the", "and") to show that most of what a language model predicts
+// is actually mundane.
 const PREDICT_WORDS = [
-  "the", "and", "of", "that", "was", "to", "is", "in",
-  "unicorn", "quantum", "chocolate", "midnight", "galaxy",
-  "Python", "recipe", "history", "lightning", "detective",
-  "volcano", "Shakespeare", "banana", "octopus", "sunrise",
-  "spaghetti", "samurai", "coffee", "paradox", "firefly",
-  "dragon", "wildfire", "whisper", "treasure", "mystery",
+  "the", "and", "of", "to", "in", "a", "the", "is", "that", "was", "for",
+  "the", "and", "with", "on", "the", "of", "an", "it", "the", "are",
+  "unicorn", "chocolate", "midnight", "galaxy", "Python",
+  "recipe", "lightning", "detective", "volcano", "Shakespeare",
+  "banana", "octopus", "sunrise", "dragon", "mystery",
 ];
 
 function spellBillions(n) {
@@ -97,6 +98,13 @@ export default function TrainAnim({ onAdvance }) {
     setDone(true);
   };
 
+  const replay = () => {
+    cancelAnimationFrame(rafRef.current);
+    startedAt.current = null;
+    setProgress(0);
+    setDone(false);
+  };
+
   const e = easeOut(progress);
   const sentences = FINAL.sentences * e;
   const hours = FINAL.hours * e;
@@ -141,9 +149,9 @@ export default function TrainAnim({ onAdvance }) {
   return (
     <div className="gen gen--anim">
       <div className="gen__prompt">
-        <div className="gen__prompt-title">Train on Everything</div>
+        <div className="gen__prompt-title">Pretrain on everything</div>
         <div className="gen__prompt-body">
-          Instead of labeling data by hand, feed the model <strong>everything we can scrape</strong> and have it play the "predict the next word" game — billions of times.
+          Instead of labeling data by hand, feed a <strong>Transformer</strong> — a specialized neural network designed for language — <strong>everything we can scrape</strong> and have it play the "predict the next word" game, billions of times. This is called <strong>pretraining</strong>. (You don't need to know the internals of a Transformer to see what comes out.)
         </div>
       </div>
 
@@ -163,39 +171,50 @@ export default function TrainAnim({ onAdvance }) {
         <div className="trainanim__arrow">→</div>
 
         <div className="trainanim__stack">
-          <div className="trainanim__model">
-            <div className="trainanim__model-label">Model</div>
-            <div className="trainanim__model-guts">
-              <div className="trainanim__part">
-                <div className="trainanim__part-label">
-                  vectors <span className="trainanim__part-sub">+ <span className="trainanim__attn-swatch">attention</span></span>
+          <div className="trainanim__model-row">
+            <div className="trainanim__model-side" aria-hidden="true" />
+            <div className="trainanim__model trainanim__model--huge">
+              <div className="trainanim__model-label">Specialized Transformer model</div>
+              <div className="trainanim__model-outer">
+                <div className="trainanim__model-inner">
+                  <div className="trainanim__model-innermost">
+                    <div className="trainanim__part">
+                      <div className="trainanim__part-label">
+                        vectors <span className="trainanim__part-sub">+ <span className="trainanim__attn-swatch">attention</span></span>
+                      </div>
+                      <div className="trainanim__grid">
+                        {cells.map((cell, k) => (
+                          <div
+                            key={k}
+                            className={`trainanim__grid-cell ${cell.attended ? "trainanim__grid-cell--attn" : ""}`}
+                            style={
+                              cell.attended
+                                ? { backgroundColor: "rgba(40, 170, 110, 0.9)" }
+                                : { backgroundColor: `rgba(184, 83, 10, ${cell.vecIntensity})` }
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="trainanim__model-layer-label">transformer layer</div>
                 </div>
-                <div className="trainanim__grid">
-                  {cells.map((cell, k) => (
-                    <div
-                      key={k}
-                      className={`trainanim__grid-cell ${cell.attended ? "trainanim__grid-cell--attn" : ""}`}
-                      style={
-                        cell.attended
-                          ? { backgroundColor: "rgba(40, 170, 110, 0.9)" }
-                          : { backgroundColor: `rgba(184, 83, 10, ${cell.vecIntensity})` }
-                      }
-                    />
-                  ))}
-                </div>
+                <div className="trainanim__model-layer-label trainanim__model-layer-label--outer">× many layers</div>
               </div>
+            </div>
 
-              <div className="trainanim__part trainanim__part--predict">
-                <div className="trainanim__part-label">predict next word</div>
-                <div className="trainanim__predict-word" key={wordTick}>
-                  {predictWord}
-                </div>
+            <span className="trainanim__predict-arrow">→</span>
+
+            <div className="trainanim__part trainanim__part--predict">
+              <div className="trainanim__part-label">next word</div>
+              <div className="trainanim__predict-word" key={wordTick}>
+                {predictWord}
               </div>
             </div>
           </div>
 
           <div className="trainanim__datacenter" aria-hidden="true">
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="trainanim__rack">
                 <div className="trainanim__rack-led" style={{ opacity: (fastTick + i) % 3 === 0 ? 1 : 0.3 }} />
                 <div className="trainanim__rack-led" style={{ opacity: (fastTick + i) % 3 === 1 ? 1 : 0.3 }} />
@@ -219,9 +238,12 @@ export default function TrainAnim({ onAdvance }) {
           <button className="btn btn--ghost" onClick={skip}>Skip animation</button>
         )}
         {done && (
-          <button className="btn btn--primary" onClick={onAdvance}>
-            See what it learned →
-          </button>
+          <>
+            <button className="btn btn--ghost" onClick={replay}>↻ Replay</button>
+            <button className="btn btn--primary" onClick={onAdvance}>
+              See what it learned →
+            </button>
+          </>
         )}
       </div>
     </div>

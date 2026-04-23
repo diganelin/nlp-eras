@@ -36,9 +36,16 @@ export default function Embeddings() {
           return (
             <button
               key={s.id}
-              className={`eliza__step ${i === stepIdx ? "eliza__step--active" : ""}`}
-              onClick={() => !locked && setStepIdx(i)}
-              disabled={locked}
+              className={`eliza__step ${i === stepIdx ? "eliza__step--active" : ""} ${locked ? "eliza__step--locked" : ""}`}
+              onClick={() => {
+                if (locked) {
+                  window.dispatchEvent(new CustomEvent("nlp:locked", {
+                    detail: "Finish Step 1 first — place all words and name your axes.",
+                  }));
+                  return;
+                }
+                setStepIdx(i);
+              }}
             >
               <span className="eliza__step-num">0{i + 1}</span>
               {s.label}

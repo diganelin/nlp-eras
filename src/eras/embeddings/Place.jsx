@@ -92,38 +92,129 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
     setPlacements(next);
   };
 
-  const prefill = () => {
-    setAxisNames({ x: "high energy", xLow: "low energy", y: "happy", yLow: "sad" });
-    setPlacements({
-      excited:  [ 0.6,  0.7],
-      pumped:   [ 0.9,  0.6],
-      cozy:     [-0.7,  0.5],
-      content:  [-0.6,  0.6],
-      tired:    [-0.8, -0.5],
-      bored:    [-0.7, -0.4],
-      drained:  [-0.6, -0.6],
-      furious:  [ 0.8, -0.7],
-      annoyed:  [ 0.5, -0.5],
-    });
+  // Each of the 9 student words has a known semantic quadrant in the
+  // (energy, valence) space. We use this to infer the student's axis
+  // orientation from their placements, then scatter the remaining words
+  // into the matching quadrant under THEIR axes.
+  //   +E = high energy, -E = low energy
+  //   +V = happy,       -V = sad
+  const SEMANTIC = {
+    excited: { e: +1, v: +1 },
+    pumped:  { e: +1, v: +1 },
+    cozy:    { e: -1, v: +1 },
+    content: { e: -1, v: +1 },
+    tired:   { e: -1, v: -1 },
+    bored:   { e: -1, v: -1 },
+    drained: { e: -1, v: -1 },
+    furious: { e: +1, v: -1 },
+    annoyed: { e: +1, v: -1 },
+  };
+
+  // Pick a jittered position in a given quadrant (|x|, |y| in [0.4, 0.85]).
+  const scatter = (quadX, quadY) => {
+    const r = () => 0.4 + Math.random() * 0.45;
+    return [quadX * r(), quadY * r()];
+  };
+
+  // Infer user's axis orientation from their current placements. Student
+  // has placed words spanning ≥2 distinct semantic quadrants — we use the
+  // means to decide which axis sign means "high energy" and which means
+  // "happy". If one axis isn't pinned by placements, we default to that
+  // axis's convention sign (+x = high energy, +y = happy).
+  const inferSigns = () => {
+    const placed = Object.entries(placements)
+      .filter(([w]) => SEMANTIC[w])
+      .map(([w, [x, y]]) => ({ w, x, y, ...SEMANTIC[w] }));
+    if (placed.length < 2) return null;
+
+    // Identify which semantic quadrants have a placement.
+    const quads = new Set(placed.map((p) => `${p.e},${p.v}`));
+    if (quads.size < 2) return null;
+
+    // For each axis, mean of coord by semantic sign.
+    let sumPosE_x = 0, nPosE = 0, sumNegE_x = 0, nNegE = 0;
+    let sumPosV_y = 0, nPosV = 0, sumNegV_y = 0, nNegV = 0;
+    for (const p of placed) {
+      if (p.e > 0) { sumPosE_x += p.x; nPosE++; } else { sumNegE_x += p.x; nNegE++; }
+      if (p.v > 0) { sumPosV_y += p.y; nPosV++; } else { sumNegV_y += p.y; nNegV++; }
+    }
+
+    // xSign: +1 if high-energy words landed on user's positive x.
+    let xSign = 1;
+    if (nPosE > 0 && nNegE > 0) {
+      xSign = (sumPosE_x / nPosE) >= (sumNegE_x / nNegE) ? +1 : -1;
+    } else if (nPosE > 0) {
+      xSign = sumPosE_x / nPosE >= 0 ? +1 : -1;
+    } else {
+      xSign = sumNegE_x / nNegE <= 0 ? +1 : -1;
+    }
+    // ySign: +1 if happy words landed on user's positive y.
+    let ySign = 1;
+    if (nPosV > 0 && nNegV > 0) {
+      ySign = (sumPosV_y / nPosV) >= (sumNegV_y / nNegV) ? +1 : -1;
+    } else if (nPosV > 0) {
+      ySign = sumPosV_y / nPosV >= 0 ? +1 : -1;
+    } else {
+      ySign = sumNegV_y / nNegV <= 0 ? +1 : -1;
+    }
+    return { xSign, ySign };
+  };
+
+  const canSkipAhead = !!inferSigns();
+
+  const fillRemaining = () => {
+    const signs = inferSigns();
+    if (!signs) return;
+    const { xSign, ySign } = signs;
+    // Do NOT overwrite existing placements — only add words the student
+    // hasn't placed yet.
+    const next = { ...placements };
+    for (const w of STUDENT_WORDS) {
+      if (next[w]) continue;
+      const sem = SEMANTIC[w];
+      if (!sem) continue;
+      const quadX = sem.e * xSign;
+      const quadY = sem.v * ySign;
+      next[w] = scatter(quadX, quadY);
+    }
+    setPlacements(next);
   };
 
   const spread = allPlaced && isSpreadEnough(placements);
   const canAdvance = allPlaced && spread && axesNamed;
 
+  // Staged instruction: A = name axes (with blue highlight on words),
+  // B = drag words onto grid, C = all done.
+  const stage =
+    !axisNames.x && !axisNames.y ? "A"
+    : !axesNamed ? "A"
+    : !allPlaced ? "B"
+    : "C";
+
   return (
     <div className="emb-place">
-      <button className="emb-place__dev" onClick={prefill} title="dev: prefill grid for testing">
-        ⚡ prefill grid
-      </button>
+      {stage === "A" && (
+        <div className="instruct-callout">
+          <span className="instruct-callout__badge">Step 1</span>
+          <div className="instruct-callout__body">
+            Look at the <span className="word-blue">words in blue</span> on the right. How are they different?
+            Fill in <strong>"Some of these words feel…"</strong> below.
+          </div>
+          <span className="instruct-callout__arrow">↓</span>
+        </div>
+      )}
+      {stage === "B" && (
+        <div className="instruct-callout">
+          <span className="instruct-callout__badge">Step 2</span>
+          <div className="instruct-callout__body">
+            Now <strong>drag each word</strong> onto the grid where it belongs on your axes.
+          </div>
+          <span className="instruct-callout__arrow">↓</span>
+        </div>
+      )}
 
       <div className="ml__prompt">
         <div className="ml__prompt-title">Pick two ways these words can differ.</div>
-        <div className="ml__prompt-body">
-          Look at the words on the right. Fill in the blanks below — only the
-          first row shows an example; the second axis is up to you. The grid
-          labels update as you type, and you can drag words on once both
-          axes have names.
-        </div>
       </div>
 
       <div className="emb-place__axes-fields">
@@ -165,6 +256,14 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
         </div>
       </div>
 
+      {canSkipAhead && !canAdvance && (
+        <div className="emb-place__autofill">
+          <button className="btn btn--ghost" onClick={fillRemaining}>
+            Skip ahead — auto-place the rest →
+          </button>
+        </div>
+      )}
+
       <div className="emb-place__grid-wrap">
         <div className="emb-place__axis-label emb-place__axis-label--top">
           {axisNames.y ? `↑ ${axisNames.y}` : "\u00a0"}
@@ -186,8 +285,9 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
                   bottom: `${((y + 1) / 2) * 100}%`,
                   transform: "translate(-50%, 50%)",
                 }}
-                onClick={() => handleRemove(word)}
-                title="click to remove"
+                onPointerDown={(e) => handlePointerDown(word, e)}
+                onDoubleClick={() => handleRemove(word)}
+                title="drag to reposition · double-click to remove"
               >
                 {word}
               </button>
@@ -215,7 +315,7 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
               {unplaced.map((w) => (
                 <button
                   key={w}
-                  className={`emb-chip ${dragging === w ? "emb-chip--dragging" : ""} ${!axesNamed ? "emb-chip--preview" : ""}`}
+                  className={`emb-chip ${dragging === w ? "emb-chip--dragging" : ""} ${!axesNamed ? "emb-chip--preview emb-chip--hint" : ""}`}
                   onPointerDown={(e) => handlePointerDown(w, e)}
                   disabled={!axesNamed}
                 >

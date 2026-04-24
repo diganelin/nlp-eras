@@ -229,16 +229,7 @@ export default function Jailbreak({ onAdvance }) {
           {terminal && !ended && (
             <div className="thard-jb-options">
               <div className="thard-jb-options-label">Your move:</div>
-              {pushPicks.map((opt) => (
-                <button
-                  key={opt.text}
-                  className="thard-jb-option"
-                  onClick={() => pushHarder(opt)}
-                >
-                  {opt.text}
-                </button>
-              ))}
-              {endingType === "partial_unlock" && (
+              {endingType === "partial_unlock" ? (
                 <>
                   <button className="thard-jb-option thard-jb-option--end" onClick={endConversation}>
                     Thanks, I got in!
@@ -247,6 +238,16 @@ export default function Jailbreak({ onAdvance }) {
                     Done — that worked.
                   </button>
                 </>
+              ) : (
+                pushPicks.map((opt) => (
+                  <button
+                    key={opt.text}
+                    className="thard-jb-option"
+                    onClick={() => pushHarder(opt)}
+                  >
+                    {opt.text}
+                  </button>
+                ))
               )}
             </div>
           )}

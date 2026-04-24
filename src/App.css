@@ -5761,6 +5761,7 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
+  padding-left: 18px;
 }
 .about__section {
   display: flex;

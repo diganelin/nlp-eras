@@ -8,7 +8,7 @@ function pickInitial() {
   return INITIALS[Math.floor(Math.random() * INITIALS.length)];
 }
 
-export default function Chat({ compiledRules, transcript, setTranscript }) {
+export default function Chat({ compiledRules, transcript, setTranscript, onAdvance }) {
   const [input, setInput] = useState("");
   const messagesRef = useRef(null);
   const botRef = useRef(null);
@@ -82,14 +82,26 @@ export default function Chat({ compiledRules, transcript, setTranscript }) {
         />
         <button type="submit" className="btn btn--primary">Send</button>
       </form>
-      <button
-        type="button"
-        className="btn btn--ghost"
-        onClick={reset}
-        style={{ alignSelf: "flex-end", fontSize: 12, marginTop: 4 }}
-      >
-        ↻ Reset
-      </button>
+      <div style={{ display: "flex", gap: 8, alignSelf: "flex-end", marginTop: 4 }}>
+        <button
+          type="button"
+          className="btn btn--ghost"
+          onClick={reset}
+          style={{ fontSize: 12 }}
+        >
+          ↻ Reset
+        </button>
+        {transcript.filter((m) => m.from === "user").length >= 3 && onAdvance && (
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={onAdvance}
+            style={{ fontSize: 12 }}
+          >
+            Move on →
+          </button>
+        )}
+      </div>
     </div>
   );
 }

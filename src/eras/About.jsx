@@ -63,13 +63,6 @@ export default function About({ onGoto }) {
           and a link back to{" "}
           <Link href="https://nlp-eras.vercel.app/">nlp-eras.vercel.app</Link>.
         </p>
-        {onGoto && (
-          <p>
-            <button className="btn btn--ghost" onClick={() => onGoto("feedback")}>
-              → Send feedback or report a glitch
-            </button>
-          </p>
-        )}
       </section>
 
       <section className="about__section">

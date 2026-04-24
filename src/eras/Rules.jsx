@@ -41,6 +41,7 @@ export default function Rules() {
             compiledRules={compiledRules}
             transcript={transcript}
             setTranscript={setTranscript}
+            onAdvance={() => setStepIdx(1)}
           />
         )}
         {current.id === "match" && (

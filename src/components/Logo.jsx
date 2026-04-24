@@ -1,45 +1,40 @@
-// Small inline N-L-P mark: three stair-stepping tiles in graduated orange
-// shades. No raster asset; scales cleanly at any size.
+// N-L-P neural-net mark: three input nodes labeled in Courier New feeding
+// into a single output node. ViewBox trimmed to the content bounding box
+// so no extra whitespace around the logo.
 export default function Logo({ size = 30, className = "" }) {
+  // Content bounds (from the source SVG):
+  //   inputs: cx 64, cy 64/128/192, r 34   -> x:[30,98]  y:[30,226]
+  //   output: cx 190, cy 128, r 22         -> x:[168,212] y:[106,150]
+  // Trimmed viewBox: "28 28 186 200" with 2px padding.
+  const viewW = 186;
+  const viewH = 200;
+  const w = size;
+  const h = Math.round((size * viewH) / viewW);
   return (
     <svg
-      viewBox="0 0 36 32"
-      width={size}
-      height={Math.round((size * 32) / 36)}
+      viewBox={`28 28 ${viewW} ${viewH}`}
+      width={w}
+      height={h}
       className={`logo ${className}`}
       role="img"
       aria-label="NLP Eras Tour"
     >
-      <rect x="0"  y="1"  width="14" height="14" rx="3" fill="#b8530a" />
-      <rect x="11" y="9"  width="14" height="14" rx="3" fill="#d96a17" />
-      <rect x="22" y="17" width="14" height="14" rx="3" fill="#f08020" />
-      <text
-        x="7"  y="9"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill="#fff"
-        fontFamily="'JetBrains Mono', ui-monospace, monospace"
-        fontWeight="800"
-        fontSize="10"
-      >N</text>
-      <text
-        x="18" y="17"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill="#fff"
-        fontFamily="'JetBrains Mono', ui-monospace, monospace"
-        fontWeight="800"
-        fontSize="10"
-      >L</text>
-      <text
-        x="29" y="25"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill="#fff"
-        fontFamily="'JetBrains Mono', ui-monospace, monospace"
-        fontWeight="800"
-        fontSize="10"
-      >P</text>
+      <g stroke="#b8530a" strokeWidth="3" fill="none">
+        <line x1="78" y1="64"  x2="190" y2="128" />
+        <line x1="78" y1="128" x2="190" y2="128" />
+        <line x1="78" y1="192" x2="190" y2="128" />
+      </g>
+      <g fill="#b8530a">
+        <circle cx="64"  cy="64"  r="34" />
+        <circle cx="64"  cy="128" r="34" />
+        <circle cx="64"  cy="192" r="34" />
+        <circle cx="190" cy="128" r="22" />
+      </g>
+      <g fill="#fff8ef" fontFamily="'Courier New', Courier, monospace" fontWeight="900" fontSize="64" textAnchor="middle">
+        <text x="64" y="64"  dy=".35em">N</text>
+        <text x="64" y="128" dy=".30em">L</text>
+        <text x="64" y="192" dy=".40em">P</text>
+      </g>
     </svg>
   );
 }

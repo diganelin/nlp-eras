@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#fff8ef"/>
+  <!-- Variant C: max letter-fill — letters nearly touching the circle edges -->
+  <g stroke="#b8530a" stroke-width="4" fill="none">
+    <line x1="86"  y1="80"  x2="178" y2="128"/>
+    <line x1="86"  y1="128" x2="178" y2="128"/>
+    <line x1="86"  y1="176" x2="178" y2="128"/>
+  </g>
+  <g fill="#b8530a">
+    <circle cx="68" cy="80"  r="36"/>
+    <circle cx="68" cy="128" r="36"/>
+    <circle cx="68" cy="176" r="36"/>
+    <circle cx="194" cy="128" r="22"/>
+  </g>
+  <g fill="#fff8ef" font-family="'Courier New', Courier, monospace" font-weight="900" font-size="58"
+     text-anchor="middle" dominant-baseline="central">
+    <text x="68" y="86">N</text>
+    <text x="68" y="134">L</text>
+    <text x="68" y="182">P</text>
+  </g>
+</svg>

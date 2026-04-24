@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#fff8ef"/>
+  <!-- Square brackets containing NLP — coding/text vibe -->
+  <g stroke="#b8530a" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- left bracket -->
+    <path d="M 56 60 L 36 60 L 36 196 L 56 196"/>
+    <!-- right bracket -->
+    <path d="M 200 60 L 220 60 L 220 196 L 200 196"/>
+  </g>
+  <text x="128" y="132"
+        text-anchor="middle" dominant-baseline="central"
+        fill="#b8530a"
+        font-family="ui-monospace, 'JetBrains Mono', monospace"
+        font-weight="800" font-size="78" letter-spacing="2">NLP</text>
+</svg>

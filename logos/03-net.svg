@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#fff8ef"/>
+  <!-- Tiny neural net: 3 input nodes (N,L,P) → 1 output node -->
+  <g stroke="#b8530a" stroke-width="3" fill="none">
+    <line x1="78"  y1="64"  x2="190" y2="128"/>
+    <line x1="78"  y1="128" x2="190" y2="128"/>
+    <line x1="78"  y1="192" x2="190" y2="128"/>
+  </g>
+  <g fill="#b8530a">
+    <circle cx="64" cy="64"  r="34"/>
+    <circle cx="64" cy="128" r="34"/>
+    <circle cx="64" cy="192" r="34"/>
+    <circle cx="208" cy="128" r="22"/>
+  </g>
+  <g fill="#fff8ef" font-family="ui-monospace, 'JetBrains Mono', monospace" font-weight="800" font-size="34"
+     text-anchor="middle" dominant-baseline="central">
+    <text x="64" y="66">N</text>
+    <text x="64" y="130">L</text>
+    <text x="64" y="194">P</text>
+  </g>
+</svg>

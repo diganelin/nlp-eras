@@ -38,11 +38,12 @@ export default function About({ onGoto }) {
         <h3 className="about__h">About this tour</h3>
         <p className="about__tagline"><em>Curious about how machines learned to talk?</em></p>
         <p>
-          This app walks through five big ideas that shaped how computers use language,
-          from the 1960s to today. Each era frames the problem researchers were stuck on,
-          then a game or challenge shows the idea that moved things forward. You'll work
-          with a chatbot therapist, a spam classifier, sentiment classification, generative
-          AI, and a modern assistant you can try to jailbreak.
+          This app walks through five big ideas in <strong>NLP (Natural Language
+          Processing)</strong> that shaped how computers use language, from the 1960s to
+          today. Each era frames the problem researchers were stuck on, then a game or
+          challenge shows the idea that moved things forward. You'll work with a chatbot
+          therapist, a spam classifier, sentiment classification, generative AI, and a
+          modern assistant you can try to jailbreak.
         </p>
       </section>
 
@@ -79,7 +80,7 @@ export default function About({ onGoto }) {
         </p>
 
         <EraSourceBlock
-          year="1966"
+          year="~1966"
           title="Rules for Language"
           authentic="Pattern-matching rules in the spirit of Weizenbaum's 1966 ELIZA; the engine is reimplemented here in JavaScript."
           modified="Rule set expanded beyond the original paper with additional keyword patterns so the demo covers more of what students are likely to type. Uses a simplified pattern DSL (* wildcards, OR groups) instead of the original MAD-SLIP regexes, so we can skip teaching regex."
@@ -90,7 +91,7 @@ export default function About({ onGoto }) {
         />
 
         <EraSourceBlock
-          year="2002"
+          year="~2002"
           title="Machine Learning with Language"
           authentic="Real text messages from the UCI corpus. The bag-of-words classifier trains live in your browser."
           modified="A balanced 500-train / 100-test subset is sampled from the full UCI corpus. Explicit / adult messages filtered out. The hand-curated labeling rounds in Stage 1 are selected pairs designed to escalate difficulty, not the straight corpus."
@@ -101,7 +102,7 @@ export default function About({ onGoto }) {
         />
 
         <EraSourceBlock
-          year="2013"
+          year="~2013"
           title="Numbers Can Capture Meaning"
           authentic="Real tweets from the Sentiment140 dataset. Pretrained GloVe word vectors. Sentiment classifier trained live in your browser."
           modified={
@@ -116,7 +117,7 @@ export default function About({ onGoto }) {
         />
 
         <EraSourceBlock
-          year="2018"
+          year="~2018"
           title="Generalized Learning with Transformers"
           authentic="Real text snippets from Wikipedia, Project Gutenberg, and the CPython standard library. Stage-3 generations are real GPT-2 output (small model, run locally). GPT-3 training estimates are real published numbers."
           modified="Stage-1 snippets chosen by hand for clarity; long paragraphs trimmed. GPT-2 samples are verbatim outputs from the 124M open-weight model; we picked a set that illustrates both wins (format, grammar) and failures (hallucinated facts, looping, bias). The 'attention' heatmap in the tagging stage is illustrative — real GPT-2 attention mostly piles onto the first token (a known 'attention sink') which isn't pedagogical."
@@ -134,7 +135,7 @@ export default function About({ onGoto }) {
         />
 
         <EraSourceBlock
-          year="2022"
+          year="~2022"
           title="Fine-Tuning Transformers"
           authentic={
             <>The AI depicted is a 2022-style large language model — a pretrained Transformer

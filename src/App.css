@@ -110,9 +110,21 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 2px 4px 8px;
+  padding: 4px 6px 8px;
   margin-bottom: 8px;
+  border: none;
   border-bottom: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  width: 100%;
+  transition: background 120ms;
+}
+.sidebar__header:hover {
+  background: var(--bg-hover);
 }
 .sidebar__logo { flex-shrink: 0; }
 
@@ -133,7 +145,6 @@
   margin: 2px 0 0;
   font-size: 10.5px;
   color: var(--text-muted);
-  font-style: italic;
   line-height: 1.2;
 }
 

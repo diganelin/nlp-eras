@@ -108,13 +108,18 @@ export default function App() {
         >
           {sidebarCollapsed ? "›" : "‹"}
         </button>
-        <div className="sidebar__header">
+        <button
+          type="button"
+          className="sidebar__header"
+          onClick={() => setActiveId("about")}
+          title="About"
+        >
           <Logo size={30} className="sidebar__logo" />
           <div className="sidebar__title-block">
             <h1 className="sidebar__title">NLP Eras Tour</h1>
             <p className="sidebar__subtitle">How computers do language</p>
           </div>
-        </div>
+        </button>
         <nav className="sidebar__nav">
           {ERAS.map((era) => (
             <EraTab

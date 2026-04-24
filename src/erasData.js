@@ -2,7 +2,7 @@ export const ERAS = [
   {
     id: "rules",
     label: "Rules for Language",
-    year: "1966",
+    year: "~1966",
     bigIdea: "Hand-craft rules for language.",
     motivation: "Computers were brand new. The only way to make one 'understand' English was to write rules — pattern by pattern, by hand. In 1966 Joseph Weizenbaum wrote ELIZA, a 'therapist' made of about 40 hand-written patterns. It took him by surprise: people poured their hearts out to it, some convinced they were talking to a real person.",
     activity: "Chat with ELIZA yourself. Match her rules to her replies, then write your own.",
@@ -12,7 +12,7 @@ export const ERAS = [
   {
     id: "ml",
     label: "Machine Learning with Language",
-    year: "2002",
+    year: "~2002",
     bigIdea: "Turn language into numbers, then apply machine learning.",
     motivation: "Spam was clogging inboxes by the early 2000s. Hand-written rules couldn't keep up. Researchers tried a different idea: just count words and let math find the patterns.",
     activity: "Label real text messages, train a spam classifier, and see where it wins and fails.",
@@ -23,7 +23,7 @@ export const ERAS = [
   {
     id: "embeddings",
     label: "Numbers Can Capture Meaning",
-    year: "2013",
+    year: "~2013",
     bigIdea: "Turn words into numbers that capture meaning.",
     motivation: "Around 2013, researchers found a way to give every word a list of numbers that reflect its meaning — words with similar meanings end up near each other. Meaning itself becomes a coordinate, and machine learning can now work with it.",
     activity: "Place words on a 2D grid by meaning, turn tweets into vectors, and train a sentiment classifier.",
@@ -33,7 +33,7 @@ export const ERAS = [
   {
     id: "generative",
     label: "Generalized Learning with Transformers",
-    year: "2018",
+    year: "~2018",
     bigIdea: "Pretrain a Transformer to predict the next word on huge amounts of text.",
     motivation: "From 2018 onward, researchers fed a new kind of specialized neural network — the Transformer — giant text dumps and trained it on one task: predict the next word. This single task on massive data is called pretraining.",
     activity: "Play the next-word game yourself, watch a model pretrain, then see what it picked up and what it missed.",
@@ -43,7 +43,7 @@ export const ERAS = [
   {
     id: "traininghard",
     label: "Fine-Tuning Transformers",
-    year: "2022",
+    year: "~2022",
     bigIdea: "Fine-tune pretrained models with extra training to make them useful.",
     motivation: "A pretrained model will say anything. Starting in 2022, labs added extra training on top — fine-tuning with human feedback, then with automatically-graded code problems — to turn raw predictors into useful assistants.",
     activity: "Rate AI responses as a contractor. Grade code as a program. Try to break a modern AI's defenses.",

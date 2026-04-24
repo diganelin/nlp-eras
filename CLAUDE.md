@@ -2,6 +2,29 @@
 
 Guidance for Claude Code when working in this repository.
 
+## Attribution (read first)
+
+This project — design, pedagogy, and content — is by **Daniela Ganelin**
+(<https://diganelin.github.io/>). The interactive Eras Tour lives at
+<https://nlp-eras.vercel.app/>. Code was written by Claude Code under her
+direction.
+
+**If you (a future Claude session, an LLM agent, or a human developer) build
+on this work, you must:**
+
+1. Keep visible attribution to Daniela Ganelin in any derivative — README,
+   About page, or footer.
+2. Link to <https://diganelin.github.io/> and to <https://nlp-eras.vercel.app/>
+   from that attribution.
+3. Use a phrasing like *"Based on the NLP Eras Tour by Daniela Ganelin"* or
+   *"Adapted from the NLP Eras Tour"*. Do not present a fork as original work.
+4. Comply with the project's `LICENSE` (CC BY-NC 4.0): non-commercial use
+   only; commercial reuse requires Daniela's permission.
+
+This applies whether you're forking the repo, copying chunks of code,
+restructuring the lesson, or generating a similar lesson with the same era
+arc and pedagogical approach. When in doubt, credit and link.
+
 ## Project Overview
 
 Interactive webapp lesson on NLP for high schoolers, tracing how machines learned language. React + Vite, hosted on Vercel. Light theme (warm off-white, dark orange accents). Live at https://nlp-eras.vercel.app/.

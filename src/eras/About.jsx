@@ -57,6 +57,14 @@ export default function About({ onGoto }) {
         <p className="about__sub">
           Made for high-school students curious about how machines learned to talk.
         </p>
+        <p className="about__sub">
+          Released under{" "}
+          <Link href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</Link>.
+          Free to use and adapt for non-commercial purposes with attribution
+          to <Link href="https://diganelin.github.io/">Daniela Ganelin</Link>{" "}
+          and a link back to{" "}
+          <Link href="https://nlp-eras.vercel.app/">nlp-eras.vercel.app</Link>.
+        </p>
         {onGoto && (
           <p>
             <button className="btn btn--ghost" onClick={() => onGoto("feedback")}>

@@ -4279,6 +4279,15 @@
   color: var(--text-muted);
   font-style: italic;
 }
+.tag__warn {
+  padding: 10px 14px;
+  background: #fdf3ec;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
 .tag__notice-list {
   margin: 0;
   padding: 0;

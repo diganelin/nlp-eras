@@ -207,6 +207,10 @@ function Picker({ votes, onPick, onAdvance, judgedCount }) {
         </div>
       </div>
 
+      <div className="tag__warn">
+        ⚠ Heads up: some of this material may be toxic or offensive — it's here to illustrate the problems of pretrained language models.
+      </div>
+
       <div className="tag__picker">
         {PAIRS.map((p) => {
           const v = votes[p.id];

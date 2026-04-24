@@ -7,6 +7,7 @@ import Generalized from "./eras/Generalized.jsx";
 import TrainingHard from "./eras/TrainingHard.jsx";
 import About from "./eras/About.jsx";
 import Feedback from "./eras/Feedback.jsx";
+import Logo from "./components/Logo.jsx";
 import { ERAS } from "./erasData.js";
 
 function EraTab({ era, active, onClick }) {
@@ -108,7 +109,11 @@ export default function App() {
           {sidebarCollapsed ? "›" : "‹"}
         </button>
         <div className="sidebar__header">
-          <h1 className="sidebar__title">NLP Eras Tour</h1>
+          <Logo size={30} className="sidebar__logo" />
+          <div className="sidebar__title-block">
+            <h1 className="sidebar__title">NLP Eras Tour</h1>
+            <p className="sidebar__subtitle">How computers do language</p>
+          </div>
         </div>
         <nav className="sidebar__nav">
           {ERAS.map((era) => (

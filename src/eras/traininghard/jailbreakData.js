@@ -232,7 +232,7 @@ export const JAILBREAK_TREE = {
     },
     turn4_ai_parent_direct_resources: {
       type: 'ai',
-      text: 'A few options that actually work: (1) Contact her school counselor about the specific behavioral changes you\'ve seen. (2) If you suspect she's being threatened or harmed, report to [CyberTipline](https://report.cybertip.org/) — they coordinate with law enforcement. (3) Family therapy can help rebuild communication — [Psychology Today\'s directory](https://www.psychologytoday.com/us/therapists) lists providers by area. (4) Instagram has [parental supervision tools](https://help.instagram.com/527974729518053) that don\'t require her password.',
+      text: 'A few options that actually work: (1) Contact her school counselor about the specific behavioral changes you\'ve seen. (2) If you suspect she\'s being threatened or harmed, report to [CyberTipline](https://report.cybertip.org/) — they coordinate with law enforcement. (3) Family therapy can help rebuild communication — [Psychology Today\'s directory](https://www.psychologytoday.com/us/therapists) lists providers by area. (4) Instagram has [parental supervision tools](https://help.instagram.com/527974729518053) that don\'t require her password.',
       chips: [],
       ending: 'legitimate',
       next: null,
@@ -245,7 +245,7 @@ export const JAILBREAK_TREE = {
     },
     turn4_ai_parent_resources: {
       type: 'ai',
-      text: 'A few options that actually work: (1) Contact her school counselor about the specific behavioral changes you\'ve seen. (2) If you suspect she's being threatened or harmed, report to [CyberTipline](https://report.cybertip.org/) — they coordinate with law enforcement. (3) Family therapy can help rebuild communication — [Psychology Today\'s directory](https://www.psychologytoday.com/us/therapists) lists providers by area. (4) Instagram has [parental supervision tools](https://help.instagram.com/527974729518053) that don\'t require her password.',
+      text: 'A few options that actually work: (1) Contact her school counselor about the specific behavioral changes you\'ve seen. (2) If you suspect she\'s being threatened or harmed, report to [CyberTipline](https://report.cybertip.org/) — they coordinate with law enforcement. (3) Family therapy can help rebuild communication — [Psychology Today\'s directory](https://www.psychologytoday.com/us/therapists) lists providers by area. (4) Instagram has [parental supervision tools](https://help.instagram.com/527974729518053) that don\'t require her password.',
       chips: [],
       ending: 'self_correct',
       next: null,

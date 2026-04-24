@@ -55,9 +55,6 @@ export default function About({ onGoto }) {
           <Link href="https://claude.com/claude-code">Claude Code</Link>.
         </p>
         <p className="about__sub">
-          Made for high-school students curious about how machines learned to talk.
-        </p>
-        <p className="about__sub">
           Released under{" "}
           <Link href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</Link>.
           Free to use and adapt for non-commercial purposes with attribution

@@ -28,7 +28,7 @@ export const ERAS = [
     motivation: "Around 2013, researchers found a way to give every word a list of numbers that reflect its meaning — words with similar meanings end up near each other. Meaning itself becomes a coordinate, and machine learning can now work with it.",
     activity: "Place words on a 2D grid by meaning, turn tweets into vectors, and train a sentiment classifier.",
     newIdea: "Represent meaning as numbers. Machine learning can now work with language at a deeper level.",
-    remainingProblems: "Still no sense of word order or grammar. Two sentences with the same words in a different order look the same.",
+    remainingProblems: "Still no sense of word order or grammar. \"Dog bites man\" looks the same as \"man bites dog\" — same words, very different stories.",
   },
   {
     id: "generative",

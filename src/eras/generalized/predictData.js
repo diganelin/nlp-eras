@@ -124,16 +124,6 @@ export const SNIPPETS = [
     answer: "surveillance",
     continuation: "surveillance. Here are more headlines: Ukrainian clashes reported as Russia meets officials.",
   },
-  {
-    id: "cc-nand",
-    register: "tech business",
-    source: "web text (Common Crawl sample)",
-    sourceUrl: "https://huggingface.co/datasets/agentlans/common-crawl-sample",
-    before: "With a solid supply agreement from Samsung, Seagate will be in a leading position any time that NAND flash enters a",
-    answer: "shortage",
-    continuation: "shortage. Without such an agreement, Seagate's SSD market share would likely drive NAND suppliers away.",
-  },
-
   // ── Encyclopedic / world-knowledge ──────────────────────────
   {
     id: "wiki-cat",

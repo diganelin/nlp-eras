@@ -8,15 +8,16 @@ import TrainingHard from "./eras/TrainingHard.jsx";
 import About from "./eras/About.jsx";
 import Feedback from "./eras/Feedback.jsx";
 import Logo from "./components/Logo.jsx";
+import Landing from "./components/Landing.jsx";
 import { ERAS } from "./erasData.js";
 
-function EraTab({ era, active, onClick }) {
+function EraTab({ era, num, active, onClick }) {
   return (
     <button
       onClick={onClick}
       className={`era-tab ${active ? "era-tab--active" : ""}`}
     >
-      <span className="era-tab__year">{era.year}</span>
+      <span className="era-tab__year">Era {num} · {era.year}</span>
       <span className="era-tab__label">{era.label}</span>
     </button>
   );
@@ -26,11 +27,6 @@ function EraIntro({ era }) {
   return (
     <div className="sidebar__intro">
       <div className="sidebar__intro-bigidea">{era.bigIdea}</div>
-      <div className="sidebar__intro-text">{era.motivation}</div>
-      <div className="sidebar__intro-activity">
-        <span className="sidebar__intro-tag">In this era</span>
-        {era.activity}
-      </div>
     </div>
   );
 }
@@ -70,10 +66,10 @@ function BeginGate({ era, eraNum, onBegin }) {
 }
 
 export default function App() {
-  const [activeId, setActiveId] = useState(ERAS[0].id);
+  const [activeId, setActiveId] = useState("home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [lockMsg, setLockMsg] = useState(null);
-  const [begun, setBegun] = useState(() => new Set()); // eras the user has entered
+  const [gateDismissed, setGateDismissed] = useState(false);
 
   useEffect(() => {
     const onLocked = (e) => setLockMsg(e.detail || "Complete the previous section first.");
@@ -87,16 +83,15 @@ export default function App() {
     return () => clearTimeout(t);
   }, [lockMsg]);
 
+  // Reset the begin-gate every time the user navigates to a different era
+  // so the era's tagline shows again, even on revisit.
+  useEffect(() => { setGateDismissed(false); }, [activeId]);
+
   const isAbout = activeId === "about";
   const isFeedback = activeId === "feedback";
+  const isHome = activeId === "home";
   const activeEra = ERAS.find((e) => e.id === activeId);
-  const showGate = activeEra && !isAbout && !isFeedback && !begun.has(activeId);
-
-  const markBegun = (id) => setBegun((prev) => {
-    const next = new Set(prev);
-    next.add(id);
-    return next;
-  });
+  const showGate = activeEra && !isAbout && !isFeedback && !gateDismissed;
 
   return (
     <div className="app-shell">
@@ -111,8 +106,8 @@ export default function App() {
         <button
           type="button"
           className="sidebar__header"
-          onClick={() => setActiveId("about")}
-          title="About"
+          onClick={() => setActiveId("home")}
+          title="Home"
         >
           <Logo size={30} className="sidebar__logo" />
           <div className="sidebar__title-block">
@@ -121,10 +116,11 @@ export default function App() {
           </div>
         </button>
         <nav className="sidebar__nav">
-          {ERAS.map((era) => (
+          {ERAS.map((era, i) => (
             <EraTab
               key={era.id}
               era={era}
+              num={i + 1}
               active={era.id === activeId}
               onClick={() => setActiveId(era.id)}
             />
@@ -142,22 +138,23 @@ export default function App() {
             <span className="era-tab__label">Feedback</span>
           </button>
         </nav>
-        {!isAbout && !isFeedback && activeEra && <EraIntro era={activeEra} />}
+        {!isAbout && !isFeedback && !isHome && activeEra && <EraIntro era={activeEra} />}
       </aside>
 
       <main className="main-content">
         <div className="main-panel">
+          {isHome && <Landing onStart={() => setActiveId(ERAS[0].id)} />}
           {isAbout && <About onGoto={setActiveId} />}
           {isFeedback && <Feedback />}
-          {!isAbout && !isFeedback && showGate && (
+          {!isHome && !isAbout && !isFeedback && showGate && (
             <BeginGate
               era={activeEra}
               eraNum={ERAS.findIndex((e) => e.id === activeId) + 1}
-              onBegin={() => markBegun(activeId)}
+              onBegin={() => setGateDismissed(true)}
             />
           )}
           <div className={`era-panels ${showGate ? "era-panels--hidden" : ""}`}
-               style={{ display: isAbout || isFeedback ? "none" : undefined }}>
+               style={{ display: isHome || isAbout || isFeedback ? "none" : undefined }}>
             <EraPanels activeId={activeId} />
           </div>
         </div>

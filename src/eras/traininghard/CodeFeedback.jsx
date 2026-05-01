@@ -10,16 +10,26 @@ function shuffled(arr) {
   return copy;
 }
 
-// Per-round nudge fired when the student submits with a wrong verdict.
-// Each one points at the actual issue without giving the answer.
-function codeHint(id) {
-  switch (id) {
-    case 1: return <>Count the r's in <em>strawberry</em> yourself.</>;
-    case 2: return <>Area of a triangle = base × height ÷ 2. Did one of these skip the ÷ 2?</>;
-    case 3: return <>Both answers say 964. An approximation can still be exactly right.</>;
-    case 4: return <>Is an error message the desired result?</>;
-    default: return null;
+// Per-round, per-side nudge — the hint depends on which answer the student
+// got wrong, so a verdict on B doesn't get a hint about A.
+function codeHint(id, wrongSide) {
+  if (id === 1) {
+    if (wrongSide === "A") return <>A says 2. Count the r's in <em>strawberry</em> yourself.</>;
+    if (wrongSide === "B") return <>B used <code>.count("r")</code> on the word and got 3. Count by hand to check.</>;
   }
+  if (id === 2) {
+    if (wrongSide === "A") return <>A computed base × height — but that's the formula for a rectangle. What's the formula for a triangle?</>;
+    if (wrongSide === "B") return <>B used base × height ÷ 2 — the standard triangle-area formula. Is 63 wrong?</>;
+  }
+  if (id === 3) {
+    if (wrongSide === "A") return <>"Approximately 964" and the code's 964 are the same number. Does "approximately" really make A wrong?</>;
+    if (wrongSide === "B") return <>The code printed 964 — same number A gave. What's wrong with it?</>;
+  }
+  if (id === 4) {
+    if (wrongSide === "A") return <>Is an error message the desired result?</>;
+    if (wrongSide === "B") return <>B printed 28. Does that actually equal 5 + 12 + 8 + 3?</>;
+  }
+  return null;
 }
 
 function AnswerBody({ answer }) {
@@ -81,6 +91,7 @@ export default function CodeFeedback({ onAdvance }) {
   const [answers, setAnswers] = useState({});
   const [showAutomation, setShowAutomation] = useState(false);
   const [popupRoundId, setPopupRoundId] = useState(null);
+  const [popupWrongSide, setPopupWrongSide] = useState(null);
 
   const round = deck[idx];
   const a = answers[round.id] || {};
@@ -98,10 +109,13 @@ export default function CodeFeedback({ onAdvance }) {
     if (!a.verdictA || !a.verdictB) return;
     const aOk = (a.verdictA === "right") === !!round.answerA.correct;
     const bOk = (a.verdictB === "right") === !!round.answerB.correct;
-    const hint = codeHint(round.id);
-    if ((!aOk || !bOk) && hint) {
-      setPopupRoundId(round.id);
-      return;
+    if (!aOk || !bOk) {
+      const wrongSide = !aOk ? "A" : "B";
+      if (codeHint(round.id, wrongSide)) {
+        setPopupWrongSide(wrongSide);
+        setPopupRoundId(round.id);
+        return;
+      }
     }
     setField("submitted", true);
   };
@@ -210,11 +224,11 @@ export default function CodeFeedback({ onAdvance }) {
           )}
         </div>
 
-        {popupRoundId === round.id && codeHint(round.id) && (
+        {popupRoundId === round.id && codeHint(round.id, popupWrongSide) && (
           <div className="thard-popup-overlay" onClick={reconsiderVerdicts}>
             <div className="thard-popup" onClick={(e) => e.stopPropagation()}>
               <div className="thard-popup__label">Careful —</div>
-              <div className="thard-popup__body">{codeHint(round.id)}</div>
+              <div className="thard-popup__body">{codeHint(round.id, popupWrongSide)}</div>
               <div className="thard-popup__actions">
                 <button className="btn btn--ghost" onClick={reconsiderVerdicts}>
                   Let me reconsider

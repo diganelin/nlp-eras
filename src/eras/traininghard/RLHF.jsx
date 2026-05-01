@@ -8,6 +8,26 @@ const FLAGS = [
   { id: "misleading", label: "Misleading" },
 ];
 
+// Per-round nudges fired when the student picks the worse response. Skip
+// rounds where there's no clear winner (ties): 6 (basic train math) and 7
+// (poem). Hand-written so each one points at the actual issue without
+// giving away the answer.
+// Per-round nudges fired when the student picks the worse response. Skip
+// rounds 6 and 7 — those are genuine ties. Phrasing aims to point at the
+// concrete evidence without giving away the answer.
+const ROUND_HINTS = {
+  1:  "Is this advice based on her interests, or her gender?",
+  2:  "\"This will fix it in 2 weeks\" — is that an honest claim about back pain?",
+  3:  "12% of 437 is 52.44. Does \"approximately 54\" round honestly?",
+  4:  "Is making up a celebrity's private email safe for the real person?",
+  5:  "Is one response treating a contested policy question as settled fact?",
+  8:  "Is telling someone with possible COVID to skip testing safe advice?",
+  9:  "Is one response treating disproven election-fraud claims as still up for debate?",
+  10: "Is this safe and responsible to recommend?",
+  11: "Did one response actually respond to the specific thing she just shared?",
+  12: "Did one response forget she just said cello?",
+};
+
 function shuffled(arr) {
   const copy = arr.slice();
   for (let i = copy.length - 1; i > 0; i--) {
@@ -36,7 +56,7 @@ function ResponseCard({ letter, text, flags, onFlagToggle, selected, onSelect })
         className={`thard-pick-btn ${selected ? "thard-pick-btn--selected" : ""}`}
         onClick={onSelect}
       >
-        {selected ? "✓ Chosen as better" : "Choose as better →"}
+        {selected ? "✓ This one is better" : "This one is better"}
       </button>
       <div className="thard-resp__flags">
         <span className="thard-resp__flag-label">
@@ -63,6 +83,7 @@ export default function RLHF({ onAdvance }) {
   const [deck] = useState(() => shuffled(RLHF_ROUNDS));
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [popupRoundId, setPopupRoundId] = useState(null);
 
   const round = deck[idx];
   const isLast = idx === deck.length - 1;
@@ -89,13 +110,32 @@ export default function RLHF({ onAdvance }) {
     setAnswerField(side === "A" ? "flagsA" : "flagsB", cur);
   };
 
-  const setPick = (choice) => {
-    setAnswerField("pick", pick === choice ? undefined : choice);
-  };
-
-  const next = () => {
+  const advance = () => {
     if (idx < deck.length - 1) setIdx(idx + 1);
   };
+
+  const setPick = (choice) => {
+    setAnswerField("pick", choice);
+    const triggersHint =
+      round.betterChoice !== "tie" &&
+      choice !== round.betterChoice &&
+      ROUND_HINTS[round.id];
+    if (triggersHint) {
+      setPopupRoundId(round.id);
+      return;
+    }
+    if (!isLast) advance();
+  };
+
+  const confirmPopup = () => {
+    setPopupRoundId(null);
+    if (!isLast) advance();
+  };
+  const reconsiderPick = () => {
+    setAnswerField("pick", undefined);
+    setPopupRoundId(null);
+  };
+
   const back = () => {
     if (idx > 0) setIdx(idx - 1);
   };
@@ -181,9 +221,6 @@ export default function RLHF({ onAdvance }) {
           {idx > 0 && (
             <button className="btn btn--ghost" onClick={back}>← Back</button>
           )}
-          {!isLast && (
-            <button className="btn btn--primary" onClick={next}>Next →</button>
-          )}
           {idx >= 3 && !isLast && (
             <button className="btn btn--ghost" onClick={onAdvance}>
               Skip ahead →
@@ -196,6 +233,23 @@ export default function RLHF({ onAdvance }) {
             <span className="thard-footer-hint">Pick A or B to finish your shift</span>
           )}
         </div>
+
+        {popupRoundId === round.id && ROUND_HINTS[round.id] && (
+          <div className="thard-popup-overlay" onClick={reconsiderPick}>
+            <div className="thard-popup" onClick={(e) => e.stopPropagation()}>
+              <div className="thard-popup__label">Careful —</div>
+              <div className="thard-popup__body">{ROUND_HINTS[round.id]}</div>
+              <div className="thard-popup__actions">
+                <button className="btn btn--ghost" onClick={reconsiderPick}>
+                  Let me reconsider
+                </button>
+                <button className="btn btn--primary" onClick={confirmPopup}>
+                  That's my answer →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

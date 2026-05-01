@@ -339,7 +339,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 40px 24px 40px 0;
+  padding: 40px 24px 40px 16px;
 }
 .landing__card {
   max-width: 600px;
@@ -5949,6 +5949,37 @@
   text-decoration: none;
   border-bottom: 1px solid currentColor;
 }
+.about__sources-details {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.about__sources-summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.about__sources-summary::-webkit-details-marker {
+  display: none;
+}
+.about__sources-summary::before {
+  content: "▶";
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 120ms ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.about__sources-details[open] .about__sources-summary::before {
+  transform: rotate(90deg);
+}
+.about__h--inline {
+  display: inline;
+  margin: 0;
+}
 
 /* ── Feedback form ───────────────────────────────────── */
 .feedback {
@@ -6033,6 +6064,11 @@
   background: #fdf3ec;
   border-color: #e5cfb5;
 }
+.recap__box--next {
+  background: var(--bg-elevated);
+  border-color: var(--accent);
+  border-style: dashed;
+}
 .recap__label {
   font-size: 13px;
   font-weight: 700;
@@ -6040,6 +6076,12 @@
 }
 .recap__box--idea .recap__label { color: var(--success); }
 .recap__box--problem .recap__label { color: var(--accent); }
+.recap__box--next .recap__label {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
 .recap__prompt {
   font-size: 13.5px;
   line-height: 1.5;
@@ -6056,6 +6098,7 @@
 }
 .recap__box--idea .recap__reveal-hint { color: var(--success); }
 .recap__box--problem .recap__reveal-hint { color: var(--accent); }
+.recap__box--next .recap__reveal-hint { color: var(--accent); }
 .recap__body {
   font-size: 14px;
   line-height: 1.55;
@@ -6084,4 +6127,158 @@
 }
 @media (max-width: 700px) {
   .recap { grid-template-columns: 1fr; }
+}
+
+/* ── Era 3 Place: soft warning when arrangement looks inconsistent ── */
+.emb-warn {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  background: #fff6e6;
+  border: 1px solid #e6c892;
+  border-radius: 8px;
+  color: #8a5a10;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 4px 0;
+}
+.emb-warn__body { flex: 1; }
+.emb-warn em { font-style: italic; font-weight: 600; color: #6b4408; }
+.emb-warn__close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: #8a5a10;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+  opacity: 0.7;
+}
+.emb-warn__close:hover { opacity: 1; }
+
+/* ── Era 3 Vectorize: fill-in puzzle cells ── */
+.emb-vec__num--puzzle {
+  display: flex;
+  align-items: center;
+}
+.emb-vec__num--ok {
+  color: #2c7a3a;
+  font-weight: 600;
+}
+.emb-vec__num-tick {
+  margin-left: 4px;
+  color: #2c7a3a;
+}
+.emb-vec__puzzle-input {
+  width: 100%;
+  max-width: 80px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+}
+.emb-vec__puzzle-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+.emb-vec__puzzle-input--bad {
+  border-color: #c34a4a;
+  background: #fdecec;
+}
+.emb-vec__puzzle-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 4px 0 6px;
+}
+.emb-vec__puzzle-msg {
+  color: #c34a4a;
+  font-size: 13px;
+}
+
+/* ── Era 5 popup: shared "Hm" overlay for RLHF + CodeFeedback ── */
+.thard-popup-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 16, 10, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.thard-popup {
+  max-width: 460px;
+  width: calc(100% - 40px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 22px 24px;
+  box-shadow: 0 12px 32px rgba(20, 16, 10, 0.2);
+  cursor: default;
+}
+.thard-popup__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.thard-popup__body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.thard-popup__body em {
+  font-style: italic;
+  color: var(--accent);
+}
+.thard-popup__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Era 5 recap: next-steps list ── */
+.recap__next-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.recap__next-list li {
+  position: relative;
+  padding-left: 18px;
+}
+.recap__next-list li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+.recap__next-list a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.recap__next-list a:hover { text-decoration: none; }
+.recap__next {
+  text-align: left;
 }

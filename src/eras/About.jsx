@@ -50,9 +50,9 @@ export default function About({ onGoto }) {
       <section className="about__section">
         <h3 className="about__h">Credits</h3>
         <p>
-          Designed and guided by{" "}
+          Created by{" "}
           <Link href="https://diganelin.github.io/">Daniela Ganelin</Link>.
-          Code (~14,700 lines) written by{" "}
+          Code (~15,800 lines) and some text written with{" "}
           <Link href="https://claude.com/claude-code">Claude Code</Link>.
         </p>
         <p className="about__sub">
@@ -66,11 +66,14 @@ export default function About({ onGoto }) {
       </section>
 
       <section className="about__section">
-        <h3 className="about__h">Sources, by era</h3>
-        <p className="about__disclaimer">
-          This is a teaching tool. Examples are grounded in real data and research, but
-          we've made modifications.
-        </p>
+        <details className="about__sources-details">
+          <summary className="about__sources-summary">
+            <h3 className="about__h about__h--inline">Sources, by era</h3>
+          </summary>
+          <p className="about__disclaimer">
+            This is a teaching tool. Examples are grounded in real data and research, but
+            we've made modifications.
+          </p>
 
         <EraSourceBlock
           year="~1966"
@@ -156,6 +159,7 @@ export default function About({ onGoto }) {
             <>Li et al. (2023). "Making AI Less 'Thirsty': Uncovering and Addressing the Secret Water Footprint of AI Models." <Link href="https://arxiv.org/abs/2304.03271">arxiv:2304.03271</Link></>,
           ]}
         />
+        </details>
       </section>
     </div>
   );

@@ -1,5 +1,3 @@
-import { ERAS } from "../erasData.js";
-
 export default function Landing({ onStart }) {
   return (
     <div className="landing">
@@ -7,22 +5,17 @@ export default function Landing({ onStart }) {
         <p className="landing__tagline"><em>Curious about how machines learned to talk?</em></p>
         <h2 className="landing__title">The NLP Eras Tour</h2>
         <p className="landing__lede">
-          A walk through <strong>five big ideas</strong> in <strong>NLP (Natural
-          Language Processing)</strong> that shaped how computers use language,
-          from the 1960s to today.
+          You've heard of <strong>ChatGPT</strong>, <strong>AI agents</strong>, and
+          voice assistants — but how do they actually work? How did computers learn
+          to talk?
         </p>
-        <ol className="landing__list">
-          {ERAS.map((era, i) => (
-            <li key={era.id}>
-              <span className="landing__num">{i + 1}</span>
-              <span className="landing__year">{era.year}</span>
-              <span className="landing__label">{era.label}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="landing__how">
-          You'll work through each era's challenges and solutions through a
-          series of games and activities.
+        <p className="landing__lede">
+          This app walks through five big ideas in{" "}
+          <strong>NLP (Natural Language Processing)</strong> that shaped how
+          computers use language, from the 1960s to today. In each era, you'll
+          work through games and challenges to solve the problems that
+          researchers were stuck on. Let's start at the beginning, when experts
+          thought language could be tamed by writing rules down by hand.
         </p>
         <div className="landing__cta-row">
           <span className="landing__arrow" aria-hidden="true">←</span>

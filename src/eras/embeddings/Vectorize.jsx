@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { STAGE2_TWEETS, STUDENT_WORDS } from "./data.js";
 import { presentation } from "./tweetPresentation.js";
 
@@ -204,6 +204,52 @@ export default function Vectorize({ placements, axisNames, onAdvance }) {
     [placements]
   );
 
+  // Pick two table cells (one x-coord, one y-coord on different words) the
+  // student must fill in by reading off the grid. Deterministic from their
+  // placements: pick the words with the largest |coord| on each axis. Both
+  // need |coord| >= 0.2 to be readable.
+  const puzzleCells = useMemo(() => {
+    if (wordPoints.length < 2) return null;
+    const cand = wordPoints.filter(
+      (p) => Math.abs(p.x) >= 0.2 || Math.abs(p.y) >= 0.2
+    );
+    if (cand.length < 2) return null;
+    const byX = [...cand].sort(
+      (a, b) => Math.abs(b.x) - Math.abs(a.x) || a.word.localeCompare(b.word)
+    );
+    const xPick = byX.find((p) => Math.abs(p.x) >= 0.2);
+    if (!xPick) return null;
+    const byY = [...cand].sort(
+      (a, b) => Math.abs(b.y) - Math.abs(a.y) || a.word.localeCompare(b.word)
+    );
+    const yPick = byY.find((p) => Math.abs(p.y) >= 0.2 && p.word !== xPick.word);
+    if (!yPick) return null;
+    return { xWord: xPick.word, yWord: yPick.word };
+  }, [wordPoints]);
+
+  const [puzzleInputs, setPuzzleInputs] = useState({ x: "", y: "" });
+  const [puzzleStatus, setPuzzleStatus] = useState({ x: "pending", y: "pending" });
+
+  useEffect(() => {
+    setPuzzleInputs({ x: "", y: "" });
+    setPuzzleStatus({ x: "pending", y: "pending" });
+  }, [puzzleCells?.xWord, puzzleCells?.yWord]);
+
+  const checkPuzzle = () => {
+    if (!puzzleCells) return;
+    const xActual = placements[puzzleCells.xWord]?.[0];
+    const yActual = placements[puzzleCells.yWord]?.[1];
+    const norm = (s) => parseFloat(String(s).replace(/[−–—]/g, "-"));
+    const xVal = norm(puzzleInputs.x);
+    const yVal = norm(puzzleInputs.y);
+    const xOk = !isNaN(xVal) && Math.abs(xVal - xActual) < 0.06;
+    const yOk = !isNaN(yVal) && Math.abs(yVal - yActual) < 0.06;
+    setPuzzleStatus({ x: xOk ? "correct" : "wrong", y: yOk ? "correct" : "wrong" });
+  };
+
+  const puzzleSolved =
+    !puzzleCells || (puzzleStatus.x === "correct" && puzzleStatus.y === "correct");
+
   const sampleTweets = useMemo(() => {
     // De-dupe by text, then pick with variety: one tweet per unique hit-set,
     // multi-word pairs first, so students don't see the same word-pair three
@@ -298,6 +344,45 @@ export default function Vectorize({ placements, axisNames, onAdvance }) {
 
   const selPoint = selectedWord ? wordPoints.find((p) => p.word === selectedWord) : null;
 
+  const renderCell = (word, axis, value) => {
+    const isPuzzle = puzzleCells && (
+      (axis === "x" && puzzleCells.xWord === word) ||
+      (axis === "y" && puzzleCells.yWord === word)
+    );
+    if (!isPuzzle) {
+      return <span className="emb-vec__num">{fmt(value)}</span>;
+    }
+    const status = puzzleStatus[axis];
+    if (status === "correct") {
+      return (
+        <span className="emb-vec__num emb-vec__num--ok">
+          {fmt(value)} <span className="emb-vec__num-tick">✓</span>
+        </span>
+      );
+    }
+    return (
+      <span className="emb-vec__num emb-vec__num--puzzle">
+        <input
+          type="text"
+          inputMode="decimal"
+          className={`emb-vec__puzzle-input ${status === "wrong" ? "emb-vec__puzzle-input--bad" : ""}`}
+          value={puzzleInputs[axis]}
+          onChange={(e) => {
+            const v = e.target.value;
+            setPuzzleInputs((a) => ({ ...a, [axis]: v }));
+            setPuzzleStatus((s) => ({ ...s, [axis]: "pending" }));
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === "Enter") { e.preventDefault(); checkPuzzle(); }
+          }}
+          placeholder="?"
+        />
+      </span>
+    );
+  };
+
   return (
     <div className="emb-vec">
       <div className="ml__prompt">
@@ -309,6 +394,16 @@ export default function Vectorize({ placements, axisNames, onAdvance }) {
           now machine-readable. Click a word to see its vector.
         </div>
       </div>
+
+      {puzzleCells && !puzzleSolved && (
+        <div className="instruct-callout">
+          <span className="instruct-callout__badge">Try this</span>
+          <div className="instruct-callout__body">
+            Two numbers are missing from the table on the right —{" "}
+            <strong>read them off the grid</strong> and fill them in.
+          </div>
+        </div>
+      )}
 
       <div className="emb-vec__split">
         <WordGrid
@@ -328,19 +423,40 @@ export default function Vectorize({ placements, axisNames, onAdvance }) {
           {wordPoints.map(({ word, x, y }) => {
             const isSel = word === selectedWord;
             return (
-              <button
+              <div
                 key={word}
+                role="button"
+                tabIndex={0}
                 className={`emb-vec__table-row ${isSel ? "emb-vec__table-row--selected" : ""}`}
                 onClick={() => setSelectedWord(isSel ? null : word)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedWord(isSel ? null : word);
+                  }
+                }}
               >
                 <span className="emb-vec__word">{word}</span>
-                <span className="emb-vec__num">{fmt(x)}</span>
-                <span className="emb-vec__num">{fmt(y)}</span>
-              </button>
+                {renderCell(word, "x", x)}
+                {renderCell(word, "y", y)}
+              </div>
             );
           })}
         </div>
       </div>
+
+      {puzzleCells && !puzzleSolved && (
+        <div className="emb-vec__puzzle-actions">
+          <button className="btn btn--primary" onClick={checkPuzzle}>
+            Check
+          </button>
+          {(puzzleStatus.x === "wrong" || puzzleStatus.y === "wrong") && (
+            <span className="emb-vec__puzzle-msg">
+              Not quite — read carefully and try again.
+            </span>
+          )}
+        </div>
+      )}
 
       {selPoint && (
         <div className="emb-vec__readout">
@@ -354,6 +470,8 @@ export default function Vectorize({ placements, axisNames, onAdvance }) {
         </div>
       )}
 
+      {puzzleSolved && (
+      <>
       <div className="ml__prompt ml__prompt--quiet">
         <div className="ml__prompt-title">Now — what about a whole tweet?</div>
         <div className="ml__prompt-body">
@@ -435,6 +553,8 @@ export default function Vectorize({ placements, axisNames, onAdvance }) {
           Train a tiny model on these vectors →
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }

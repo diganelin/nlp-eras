@@ -41,6 +41,7 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
   placementsRef.current = placements;
   const [dragging, setDragging] = useState(null); // mirror for rendering
   const [hoverPos, setHoverPos] = useState(null);
+  const [dismissedPair, setDismissedPair] = useState(null);
 
   const words = useMemo(() => shuffled(STUDENT_WORDS), []);
   const unplaced = words.filter((w) => !placements[w]);
@@ -130,6 +131,13 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
     // Identify which semantic quadrants have a placement.
     const quads = new Set(placed.map((p) => `${p.e},${p.v}`));
     if (quads.size < 2) return null;
+    // 2 diagonal quadrants (e.g. only (+E,+V) and (-E,-V)) leave the axis
+    // assignment ambiguous — could be energy/valence or valence/energy. Only
+    // accept 2-quadrant cases where the quadrants are adjacent.
+    if (quads.size === 2) {
+      const [q1, q2] = [...quads].map((s) => s.split(",").map(Number));
+      if (q1[0] !== q2[0] && q1[1] !== q2[1]) return null;
+    }
 
     // For each axis, mean of coord by semantic sign.
     let sumPosE_x = 0, nPosE = 0, sumNegE_x = 0, nNegE = 0;
@@ -162,6 +170,28 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
 
   const canSkipAhead = !!inferSigns();
 
+  // Soft check: are any pair of semantically-opposite words placed close
+  // together? Returns the closest such pair, or null. Only fires once all 9
+  // are down so we have the full picture.
+  const findInconsistency = () => {
+    const placed = Object.entries(placements)
+      .filter(([w]) => SEMANTIC[w])
+      .map(([w, [x, y]]) => ({ w, x, y, ...SEMANTIC[w] }));
+    if (placed.length < STUDENT_WORDS.length) return null;
+    let closest = null;
+    for (let i = 0; i < placed.length; i++) {
+      for (let j = i + 1; j < placed.length; j++) {
+        const a = placed[i], b = placed[j];
+        // Diagonal opposites in SEMANTIC: both energy and valence differ.
+        if (a.e !== b.e && a.v !== b.v) {
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (!closest || d < closest.dist) closest = { a: a.w, b: b.w, dist: d };
+        }
+      }
+    }
+    return closest && closest.dist < 0.6 ? closest : null;
+  };
+
   const fillRemaining = () => {
     const signs = inferSigns();
     if (!signs) return;
@@ -182,6 +212,10 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
 
   const spread = allPlaced && isSpreadEnough(placements);
   const canAdvance = allPlaced && spread && axesNamed;
+
+  const inconsistency = findInconsistency();
+  const inconsistencyKey = inconsistency ? `${inconsistency.a}+${inconsistency.b}` : null;
+  const showWarning = !!inconsistency && dismissedPair !== inconsistencyKey && axesNamed;
 
   // Staged instruction: A = name axes (with blue highlight on words),
   // B = drag words onto grid, C = all done.
@@ -260,6 +294,25 @@ export default function Place({ placements, setPlacements, axisNames, setAxisNam
         <div className="emb-place__autofill">
           <button className="btn btn--ghost" onClick={fillRemaining}>
             Skip ahead — auto-place the rest →
+          </button>
+        </div>
+      )}
+
+      {showWarning && (
+        <div className="emb-warn" role="status">
+          <div className="emb-warn__body">
+            <strong>Careful</strong> — <em>{inconsistency.a}</em> and{" "}
+            <em>{inconsistency.b}</em> feel like they should be on opposite
+            sides of the grid, but you've put them close together. Want to
+            rearrange?
+          </div>
+          <button
+            type="button"
+            className="emb-warn__close"
+            onClick={() => setDismissedPair(inconsistencyKey)}
+            aria-label="Dismiss"
+          >
+            ✕
           </button>
         </div>
       )}

@@ -40,7 +40,37 @@ function VectorStrip({ vec, revealed }) {
 }
 
 export default function Scale({ onAdvance }) {
-  const rounds = useMemo(() => STAGE4_TRIPLETS.slice(0, ROUNDS), []);
+  // The data file always lists the similar pair first, so without shuffling
+  // the right answer would be (1, 2) every round. Shuffle the 3 tweets per
+  // round and remap the pair keys.
+  const rounds = useMemo(() => {
+    return STAGE4_TRIPLETS.slice(0, ROUNDS).map((r, ri) => {
+      const newOrder = [0, 1, 2];
+      let s = ri * 31 + 7;
+      const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+      for (let i = 2; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [newOrder[i], newOrder[j]] = [newOrder[j], newOrder[i]];
+      }
+      const newTweets = newOrder.map((oi) => r.tweets[oi]);
+      const remap = (pair) => {
+        const [a, b] = [+pair[0], +pair[1]];
+        const ni = newOrder.indexOf(a);
+        const nj = newOrder.indexOf(b);
+        return `${Math.min(ni, nj)}${Math.max(ni, nj)}`;
+      };
+      const newSimilarities = {};
+      for (const k of Object.keys(r.similarities)) {
+        newSimilarities[remap(k)] = r.similarities[k];
+      }
+      return {
+        ...r,
+        tweets: newTweets,
+        similarities: newSimilarities,
+        similar_pair: remap(r.similar_pair),
+      };
+    });
+  }, []);
   const [roundIdx, setRoundIdx] = useState(0);
   const [picks, setPicks] = useState([]); // indices within the current triplet
   const [revealed, setRevealed] = useState(false);
@@ -84,8 +114,10 @@ export default function Scale({ onAdvance }) {
           Real word vectors — like the ones Google and Stanford researchers
           trained on billions of words — are lists of{" "}
           <strong>25, 50, or even 300</strong> numbers. The same averaging
-          trick gives every tweet a vector that long. Which tweets land
-          closest? Let's see if you can spot them.
+          trick gives every tweet a vector that long. Unlike our two-axis
+          example, it's not always easy to tell what "meaning" any single
+          number captures — these are learned automatically, not hand-named.
+          Which tweets land closest? Let's see if you can spot them.
         </div>
       </div>
 

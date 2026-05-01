@@ -10,6 +10,18 @@ function shuffled(arr) {
   return copy;
 }
 
+// Per-round nudge fired when the student submits with a wrong verdict.
+// Each one points at the actual issue without giving the answer.
+function codeHint(id) {
+  switch (id) {
+    case 1: return <>Count the r's in <em>strawberry</em> yourself.</>;
+    case 2: return <>Area of a triangle = base × height ÷ 2. Did one of these skip the ÷ 2?</>;
+    case 3: return <>Both answers say 964. An approximation can still be exactly right.</>;
+    case 4: return <>Is an error message the desired result?</>;
+    default: return null;
+  }
+}
+
 function AnswerBody({ answer }) {
   if (answer.kind === "raw") {
     return <div className="thard-panel-body">{answer.text}</div>;
@@ -68,6 +80,7 @@ export default function CodeFeedback({ onAdvance }) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showAutomation, setShowAutomation] = useState(false);
+  const [popupRoundId, setPopupRoundId] = useState(null);
 
   const round = deck[idx];
   const a = answers[round.id] || {};
@@ -83,7 +96,26 @@ export default function CodeFeedback({ onAdvance }) {
 
   const submit = () => {
     if (!a.verdictA || !a.verdictB) return;
+    const aOk = (a.verdictA === "right") === !!round.answerA.correct;
+    const bOk = (a.verdictB === "right") === !!round.answerB.correct;
+    const hint = codeHint(round.id);
+    if ((!aOk || !bOk) && hint) {
+      setPopupRoundId(round.id);
+      return;
+    }
     setField("submitted", true);
+  };
+
+  const confirmSubmit = () => {
+    setField("submitted", true);
+    setPopupRoundId(null);
+  };
+  const reconsiderVerdicts = () => {
+    setAnswers((prev) => ({
+      ...prev,
+      [round.id]: { ...prev[round.id], verdictA: undefined, verdictB: undefined },
+    }));
+    setPopupRoundId(null);
   };
 
   const next = () => { if (idx < deck.length - 1) setIdx(idx + 1); };
@@ -177,6 +209,23 @@ export default function CodeFeedback({ onAdvance }) {
             </button>
           )}
         </div>
+
+        {popupRoundId === round.id && codeHint(round.id) && (
+          <div className="thard-popup-overlay" onClick={reconsiderVerdicts}>
+            <div className="thard-popup" onClick={(e) => e.stopPropagation()}>
+              <div className="thard-popup__label">Careful —</div>
+              <div className="thard-popup__body">{codeHint(round.id)}</div>
+              <div className="thard-popup__actions">
+                <button className="btn btn--ghost" onClick={reconsiderVerdicts}>
+                  Let me reconsider
+                </button>
+                <button className="btn btn--primary" onClick={confirmSubmit}>
+                  That's my answer →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
